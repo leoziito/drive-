@@ -91,10 +91,10 @@
             font-size: 0.9rem; /* Corrected: Decreased search icon size */
         }
 
-        /* Profile Icon in Header */
+        /* Profile Icon in Header (reverted to original size) */
         .profile-icon {
-            width: 50px;
-            height: 50px;
+            width: 50px; 
+            height: 50px; 
             border-radius: 50%;
             background-color: #e0e0e0;
             display: flex;
@@ -124,6 +124,19 @@
             margin-top: 16px;
             margin-bottom: 16px;
             flex-grow: 1;
+        }
+
+        /* Profile Section Styles (formerly profile modal content) */
+        #profileSection { /* Renamed from profileModal */
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            margin-bottom: 18px;
+            text-align: center;
+            max-width: 600px; /* Adjusted to match former modal width */
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* Post and Comment Card Styles */
@@ -308,8 +321,8 @@
             box-sizing: border-box;
         }
 
-        #profileModal {
-            background-color: rgba(0,0,0,0.8);
+        #profileModal { /* Original ID, now hidden */
+            display: none; /* Ensure it's hidden */
         }
 
         .modal-content {
@@ -324,11 +337,6 @@
             box-sizing: border-box;
             transform: translateY(0);
             animation: modal-fade-in 0.3s ease-out forwards;
-        }
-
-        /* Expanded profile modal width */
-        #profileModal .modal-content {
-            max-width: 600px; /* Expanded width for profile modal */
         }
 
         /* Requests Feed Modal Width (now createRequestModal) */
@@ -417,10 +425,10 @@
             transform: scale(1.08);
         }
 
-        /* Profile Modal Picture */
+        /* Profile Modal Picture (within profile section - increased size) */
         .profile-modal-pic {
-            width: 100px;
-            height: 100px;
+            width: 150px; /* Increased size */
+            height: 150px; /* Increased size */
             border-radius: 50%;
             background-color: #e0e0e0;
             display: flex;
@@ -794,12 +802,8 @@
             transform: scale(1.1);
         }
 
-        /* Recent Posts Modal Specific Styles */
-        #recentPostsModal .modal-content {
-            max-width: 600px;
-        }
-
-        .recent-posts-grid {
+        /* Recent Posts Section Specific Styles (now a regular section) */
+        #recentPostsSection .recent-posts-grid { /* Targeting the grid within the section */
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             gap: 15px;
@@ -865,8 +869,8 @@
 
         @media (max-width: 640px) {
             .profile-icon {
-                width: 40px;
-                height: 40px;
+                width: 40px; /* Adjusted for smaller screens */
+                height: 40px; /* Adjusted for smaller screens */
             }
             .fab {
                 width: 50px;
@@ -906,9 +910,22 @@
                 width: 280px;
                 right: -280px;
             }
-            .recent-posts-grid {
+            /* Adjusted for smaller screens when recent posts becomes a section */
+            #recentPostsSection .recent-posts-grid {
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             }
+        }
+
+        /* Highlight for shared posts */
+        @keyframes highlight-post {
+            0% { box-shadow: 0 0 0 0px rgba(79, 70, 229, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(79, 70, 229, 0.6); }
+            100% { box-shadow: 0 0 0 0px rgba(79, 70, 229, 0.4); }
+        }
+
+        .post-card.highlight-shared {
+            animation: highlight-post 1.5s ease-in-out;
+            border: 2px solid #4f46e5; /* Add a border for persistent highlight */
         }
     </style>
 </head>
@@ -959,6 +976,55 @@
             <div id="requestsContainer" class="flex flex-col gap-4">
                 <p class="text-center text-gray-500">Carregando pedidos...</p>
             </div>
+        </div>
+
+        <!-- Recent Posts Section (now a regular section) -->
+        <div id="recentPostsSection" class="hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Lançamentos Recentes</h2>
+            <div id="recentPostsContainer" class="recent-posts-grid">
+                <p class="text-center text-gray-500 col-span-full">Carregando lançamentos...</p>
+            </div>
+        </div>
+
+        <!-- Profile Section (Expanded, not a modal) -->
+        <!-- This section will be toggled visible/hidden -->
+        <div id="profileSection" class="hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Meu Perfil</h2>
+
+            <div class="profile-modal-pic">
+                <img id="profilePicDisplay" src="https://placehold.co/80x80/cccccc/000000?text=P" alt="Profile Picture" onerror="this.onerror=null;this.src='https://placehold.co/80x80/cccccc/000000?text=P';">
+            </div>
+            
+            <p class="text-sm text-gray-600 mb-4">ID: <span id="profileUserIdDisplay" class="font-mono text-gray-800 break-all"></span></p>
+            
+            <hr class="my-4">
+
+            <!-- Section for Name Change -->
+            <div class="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center justify-center">
+                    Alterar Nome de Usuário
+                    <img id="profileVerificationBadge" src="https://img.icons8.com/?size=512&id=2sZ0sdlG9kWP&format=png" alt="Verificado" class="verification-badge">
+                    <i id="openVerificationModalIcon" class="fas fa-check-circle profile-verification-icon" title="Solicitar Verificação"></i>
+                </h3>
+                <div class="flex items-center gap-2 mb-3">
+                    <input type="text" id="profileNameInput" class="flex-grow p-3 border border-gray-300 rounded-lg text-gray-800 text-center font-semibold" placeholder="Seu Nome de Usuário">
+                    <button id="saveNameBtn" class="btn-primary py-2 px-4">Salvar</button>
+                </div>
+            </div>
+
+            <!-- Section for Profile Image Change -->
+            <div class="mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3">Alterar Imagem de Perfil</h3>
+                <div class="mb-2">
+                    <label for="profileImageUrlInput" class="block text-gray-700 text-sm font-bold mb-2">URL da Imagem</label>
+                    <input type="url" id="profileImageUrlInput" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Cole a URL da imagem aqui...">
+                </div>
+                <button id="saveImageBtn" class="btn-primary w-full">Salvar Imagem</button>
+            </div>
+
+            <footer class="mt-8 text-center text-gray-500 text-sm">
+                Versão 1.0.0 (2025) criado por Leonardo
+            </footer>
         </div>
     </div>
 
@@ -1123,42 +1189,10 @@
         </div>
     </div>
 
-    <!-- Profile Modal -->
-    <div id="profileModal" class="modal">
+    <!-- Profile Modal (Original, now hidden and replaced by profileSection) -->
+    <div id="profileModal" class="modal hidden"> <!-- Kept for compatibility but hidden -->
         <div class="modal-content text-center">
-            <span class="close-button" onclick="window.closeModal('profileModal')">&times;</span>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Meu Perfil</h2>
-
-            <div class="profile-modal-pic">
-                <img id="profilePicDisplay" src="https://placehold.co/80x80/cccccc/000000?text=P" alt="Profile Picture" onerror="this.onerror=null;this.src='https://placehold.co/80x80/cccccc/000000?text=P';">
-            </div>
-            
-            <p class="text-sm text-gray-600 mb-4">ID: <span id="profileUserIdDisplay" class="font-mono text-gray-800 break-all"></span></p>
-            
-            <hr class="my-4">
-
-            <!-- Section for Name Change -->
-            <div class="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
-                <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center justify-center">
-                    Alterar Nome de Usuário
-                    <img id="profileVerificationBadge" src="https://img.icons8.com/?size=512&id=2sZ0sdlG9kWP&format=png" alt="Verificado" class="verification-badge">
-                    <i id="openVerificationModalIcon" class="fas fa-check-circle profile-verification-icon" title="Solicitar Verificação"></i>
-                </h3>
-                <div class="flex items-center gap-2 mb-3">
-                    <input type="text" id="profileNameInput" class="flex-grow p-3 border border-gray-300 rounded-lg text-gray-800 text-center font-semibold" placeholder="Seu Nome de Usuário">
-                    <button id="saveNameBtn" class="btn-primary py-2 px-4">Salvar</button>
-                </div>
-            </div>
-
-            <!-- Section for Profile Image Change -->
-            <div class="mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-                <h3 class="text-lg font-semibold text-gray-700 mb-3">Alterar Imagem de Perfil</h3>
-                <div class="mb-2">
-                    <label for="profileImageUrlInput" class="block text-gray-700 text-sm font-bold mb-2">URL da Imagem</label>
-                    <input type="url" id="profileImageUrlInput" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Cole a URL da imagem aqui...">
-                </div>
-                <button id="saveImageBtn" class="btn-primary w-full">Salvar Imagem</button>
-            </div>
+            <!-- Content moved to profileSection -->
         </div>
     </div>
     
@@ -1225,17 +1259,6 @@
             <div id="discussionModalContent" class="flex flex-col gap-3 mb-4"></div>
             <textarea id="discussionModalInput" class="w-full p-3 border border-gray-300 rounded-lg mb-3" rows="2" placeholder="Adicionar um comentário..."></textarea>
             <button id="addDiscussionModalBtn" class="btn-primary w-full">Adicionar</button>
-        </div>
-    </div>
-
-    <!-- Recent Posts Modal -->
-    <div id="recentPostsModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" onclick="window.closeModal('recentPostsModal')">&times;</span>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Lançamentos Recentes</h2>
-            <div id="recentPostsContainer" class="recent-posts-grid">
-                <p class="text-center text-gray-500 col-span-full">Carregando lançamentos...</p>
-            </div>
         </div>
     </div>
 
@@ -1307,6 +1330,7 @@
         let allPostsData = []; // Array of all posts
         let allRequestsData = []; // Array of all requests
         let isUserVerified = false; // Local state for verification
+        let activeView = 'posts'; // Track the currently active view: 'posts', 'requests', 'recent', or 'profile'
 
         // TMDB API
         const TMDB_API_KEY = "d0f7e2c414b1efff7b000ae9b681ed1b";
@@ -1317,6 +1341,7 @@
         // DOM Elements
         const postsFeedSection = document.getElementById('postsFeedSection');
         const requestsFeedSection = document.getElementById('requestsFeedSection');
+        const recentPostsSection = document.getElementById('recentPostsSection'); // New: Recent Posts Section
         const postsContainer = document.getElementById('postsContainer');
         const requestsContainer = document.getElementById('requestsContainer'); // This will hold the rendered requests
         const createPostFab = document.getElementById('createPostFab');
@@ -1345,7 +1370,7 @@
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         const profileIcon = document.getElementById('profileIcon');
         const headerProfilePic = document.getElementById('headerProfilePic');
-        const profileModal = document.getElementById('profileModal');
+        const profileSection = document.getElementById('profileSection'); // Changed from profileModal
         const profilePicDisplay = document.getElementById('profilePicDisplay');
         const profileNameInput = document.getElementById('profileNameInput');
         const profileUserIdDisplay = document.getElementById('profileUserIdDisplay');
@@ -1375,8 +1400,7 @@
         const savedPostsContainer = document.getElementById('savedPostsContainer');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-        // New Recent Posts Modal Elements
-        const recentPostsModal = document.getElementById('recentPostsModal');
+        // Recent Posts Section Elements (updated to reference the section)
         const recentPostsContainer = document.getElementById('recentPostsContainer');
         const toggleRecentPostsBtn = document.getElementById('toggleRecentPostsBtn');
 
@@ -1445,6 +1469,18 @@
             }
         }
 
+        // Function to copy post link to clipboard
+        function copyPostLink(postId) {
+            const postLink = `${window.location.origin}${window.location.pathname}?postId=${postId}`;
+            const tempInput = document.createElement('input');
+            document.body.appendChild(tempInput);
+            tempInput.value = postLink;
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showMessageBox("Link da postagem copiado!", "success");
+        }
+
         // --- Firebase & App Initialization ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -1456,6 +1492,25 @@
                 listenForPosts();
                 listenForSavedPosts();
                 listenForRequests(); // Start listening for requests
+
+                // Check for postId in URL on initial load
+                const urlParams = new URLSearchParams(window.location.search);
+                const postIdFromUrl = urlParams.get('postId');
+                if (postIdFromUrl) {
+                    // Wait for posts to load, then scroll and highlight
+                    const unsubscribe = onSnapshot(collection(db, `artifacts/${appId}/public/data/posts`), (snapshot) => {
+                        const postElement = document.getElementById(`post-${postIdFromUrl}`);
+                        if (postElement) {
+                            postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            postElement.classList.add('highlight-shared');
+                            setTimeout(() => {
+                                postElement.classList.remove('highlight-shared');
+                            }, 3000); // Remove highlight after 3 seconds
+                            unsubscribe(); // Stop listening once found and highlighted
+                        }
+                    });
+                }
+
             } else {
                 signInAnonymously(auth).catch(error => {
                     console.error("Authentication Error:", error);
@@ -1471,7 +1526,6 @@
                 snapshot.docs.forEach(doc => {
                     usersCache[doc.id] = doc.data();
                 });
-                // Removed isUserVerified check for profileImageUrlInput.disabled
                 updateVerificationStatusUI(); // Still update badge
                 filterAndRenderPosts(searchInput.value);
                 filterAndRenderRequests(); // Update requests when user data changes
@@ -1483,7 +1537,6 @@
             const currentUserData = usersCache[currentUserId] || {};
             isUserVerified = !!currentUserData.isVerified;
             profileVerificationBadge.classList.toggle('show', isUserVerified);
-            // Removed profileImageUrlInput.disabled = !isUserVerified;
         }
 
         async function fetchOrCreateUserProfile(userId) {
@@ -1502,6 +1555,7 @@
                 profileNameInput.value = userData.userName || "Usuário Novo";
                 headerProfilePic.src = userData.profilePicUrl || "https://placehold.co/50x50/cccccc/000000?text=P";
                 profilePicDisplay.src = userData.profilePicUrl || "https://placehold.co/80x80/cccccc/000000?text=P";
+                profileImageUrlInput.value = userData.profilePicUrl || ''; // Populate with current URL
                 updateVerificationStatusUI();
             } catch (error) {
                 console.error("Error fetching/creating user profile:", error);
@@ -1554,7 +1608,6 @@
             }
         });
 
-
         profileIcon.addEventListener('click', () => {
             if (!currentUserId) return;
             const userData = usersCache[currentUserId] || {};
@@ -1562,8 +1615,44 @@
             profilePicDisplay.src = userData.profilePicUrl || "https://placehold.co/80x80/cccccc/000000?text=P";
             profileImageUrlInput.value = userData.profilePicUrl || ''; // Populate with current URL
             updateVerificationStatusUI();
-            openModal('profileModal');
+            
+            // Hide all feeds and show profile section
+            postsFeedSection.classList.add('hidden');
+            requestsFeedSection.classList.add('hidden');
+            recentPostsSection.classList.add('hidden'); // Hide recent posts section
+            profileSection.classList.remove('hidden');
+            createPostFab.classList.add('hidden'); // Hide FAB when in profile
+            activeView = 'profile'; // Set active view
         });
+
+        // Navigation for header logo and feed buttons
+        function showFeed(feedType) {
+            postsFeedSection.classList.add('hidden');
+            requestsFeedSection.classList.add('hidden');
+            recentPostsSection.classList.add('hidden'); // Hide recent posts section
+            profileSection.classList.add('hidden'); // Hide profile section
+
+            if (feedType === 'posts') {
+                postsFeedSection.classList.remove('hidden');
+                createPostFab.classList.remove('hidden');
+                filterAndRenderPosts(searchInput.value);
+            } else if (feedType === 'requests') {
+                requestsFeedSection.classList.remove('hidden');
+                createPostFab.classList.add('hidden');
+                listenForRequests();
+            } else if (feedType === 'recent') {
+                recentPostsSection.classList.remove('hidden');
+                createPostFab.classList.add('hidden');
+                listenForRecentPosts();
+            }
+            activeView = feedType;
+            window.scrollTo(0, 0); // Scroll to top when changing views
+        }
+
+        headerLogoContainer.addEventListener('click', () => showFeed('posts'));
+        toggleRequestsFeedBtn.addEventListener('click', () => showFeed('requests'));
+        toggleRecentPostsBtn.addEventListener('click', () => showFeed('recent'));
+
 
         openVerificationModalIcon.addEventListener('click', () => openModal('verificationModal'));
 
@@ -1585,7 +1674,6 @@
                 try {
                     await updateDoc(userRef, { isVerified: true });
                     isUserVerified = true;
-                    // Removed profileImageUrlInput.disabled = false; as it's always enabled now
                     showMessageBox("Selo de verificação ativado!", "success");
                     window.closeModal('verificationModal');
                     updateVerificationStatusUI();
@@ -1605,34 +1693,34 @@
             // Additional for variety: Orange, Dark Blue, Purple
             
             // Action, Adventure, Animation, Comedy, Crime
-            28: 'tag-color-red',       // Ação (Red)
-            12: 'tag-color-blue',      // Aventura (Blue)
-            16: 'tag-color-green',     // Animação (Green)
-            35: 'tag-color-yellow',    // Comédia (Yellow)
-            80: 'tag-color-darkblue',  // Crime (Dark Blue)
+            28: 'tag-color-red',      // Ação (Red)
+            12: 'tag-color-blue',     // Aventura (Blue)
+            16: 'tag-color-green',    // Animação (Green)
+            35: 'tag-color-yellow',   // Comédia (Yellow)
+            80: 'tag-color-darkblue', // Crime (Dark Blue)
             
             // Documentary, Drama, Family, Fantasy, History
-            99: 'tag-color-blue',      // Documentário (Blue - as per image example)
-            18: 'tag-color-green',     // Drama (Green - as per image example)
-            10751: 'tag-color-yellow', // Família (Yellow)
-            14: 'tag-color-purple',    // Fantasia (Purple)
-            36: 'tag-color-orange',    // História (Orange)
+            99: 'tag-color-blue',     // Documentário (Blue - as per image example)
+            18: 'tag-color-green',    // Drama (Green - as per image example)
+            10751: 'tag-color-yellow',// Família (Yellow)
+            14: 'tag-color-purple',   // Fantasia (Purple)
+            36: 'tag-color-orange',   // História (Orange)
             
             // Horror, Music, Mystery, Romance, Science Fiction
-            27: 'tag-color-red',       // Terror (Red)
-            10402: 'tag-color-green',  // Música (Green)
+            27: 'tag-color-red',      // Terror (Red)
+            10402: 'tag-color-green', // Música (Green)
             9648: 'tag-color-darkblue',// Mistério (Dark Blue)
-            10749: 'tag-color-yellow', // Romance (Yellow)
-            878: 'tag-color-blue',     // Ficção Científica (Blue)
+            10749: 'tag-color-yellow',// Romance (Yellow)
+            878: 'tag-color-blue',    // Ficção Científica (Blue)
             
             // TV Movie, Thriller, War, Western, Reality, Talk, News
-            10770: 'tag-color-orange', // Filme de TV (Orange)
-            53: 'tag-color-red',       // Thriller (Red)
-            10752: 'tag-color-green',  // Guerra (Green)
-            37: 'tag-color-blue',      // Faroeste (Blue)
-            10764: 'tag-color-yellow', // Reality (Yellow)
+            10770: 'tag-color-orange',// Filme de TV (Orange)
+            53: 'tag-color-red',      // Thriller (Red)
+            10752: 'tag-color-green', // Guerra (Green)
+            37: 'tag-color-blue',     // Faroeste (Blue)
+            10764: 'tag-color-yellow',// Reality (Yellow)
             10767: 'tag-color-darkblue',// Talk (Dark Blue)
-            10763: 'tag-color-orange'  // Notícias (Orange)
+            10763: 'tag-color-orange' // Notícias (Orange)
         };
 
         const qualityColorMap = {
@@ -1731,6 +1819,7 @@
                         <span class="text-gray-600 comment-count-${post.id}">0</span>
                     </div>
                     <div class="flex gap-2">
+                        <button class="btn-icon text-gray-600 hover:text-gray-800" data-post-id="${post.id}" data-action="share-post" title="Compartilhar"><i class="fas fa-link"></i></button>
                         <button class="btn-icon btn-save ${savedByCurrentUser ? 'saved' : ''}" data-post-id="${post.id}" data-action="toggle-save"><i class="${savedByCurrentUser ? 'fas' : 'far'} fa-bookmark"></i></button>
                         ${post.driveLinks?.length > 0 ? `
                             <button class="btn-icon text-red-500 hover:text-red-700" data-post-id="${post.id}" data-action="download-link" title="Baixar">
@@ -1746,6 +1835,7 @@
 
             postElement.querySelector(`[data-action="like"]`).addEventListener('click', (e) => toggleLike(e.currentTarget.dataset.postId, e.currentTarget));
             postElement.querySelector(`[data-action="toggle-save"]`).addEventListener('click', (e) => toggleSave(e.currentTarget.dataset.postId));
+            postElement.querySelector(`[data-action="share-post"]`).addEventListener('click', (e) => copyPostLink(e.currentTarget.dataset.postId)); // Share button listener
             if (isOwner) {
                 postElement.querySelector(`[data-action="edit-post"]`).addEventListener('click', () => openEditModal(post));
                 postElement.querySelector(`[data-action="delete-post"]`).addEventListener('click', (e) => openConfirmationModal('post', e.currentTarget.dataset.postId));
@@ -1793,15 +1883,6 @@
         
         searchInput.addEventListener('input', debounce(() => filterAndRenderPosts(searchInput.value), 300));
 
-        headerLogoContainer.addEventListener('click', () => {
-            window.scrollTo(0, 0);
-            searchInput.value = '';
-            filterAndRenderPosts('');
-            postsFeedSection.classList.remove('hidden');
-            requestsFeedSection.classList.add('hidden');
-            createPostFab.classList.remove('hidden');
-        });
-
         // --- TMDB & Post Creation ---
         async function fetchTmdbGenres() {
             try {
@@ -1822,7 +1903,7 @@
                 const response = await fetch(`${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=pt-BR`);
                 const data = await response.json();
                 return data.results?.filter(item => item.media_type === 'movie' || item.media_type === 'tv')
-                                        .sort((a, b) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 10) || [];
+                                         .sort((a, b) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 10) || [];
             } catch (error) {
                 console.error("Error searching TMDB:", error);
                 return [];
@@ -2302,11 +2383,7 @@
         }
         
         // --- Recent Posts (Fire Icon) Logic ---
-        toggleRecentPostsBtn.addEventListener('click', () => {
-            openModal('recentPostsModal');
-            listenForRecentPosts();
-        });
-
+        // Changed to directly show/hide section
         function listenForRecentPosts() {
             const currentYear = new Date().getFullYear();
             const postsRef = collection(db, `artifacts/${appId}/public/data/posts`);
@@ -2356,7 +2433,7 @@
             `;
             recentPostsContainer.appendChild(postElement);
 
-            // Add event listener for the access button in the recent posts modal
+            // Add event listener for the access button in the recent posts section
             postElement.querySelector('[data-action="open-links-recent"]')?.addEventListener('click', () => {
                 const postToOpen = allPostsCache[post.id];
                 if (postToOpen) openLinksModal(postToOpen.title, postToOpen.driveLinks);
@@ -2364,13 +2441,6 @@
         }
 
         // --- New Requests Feature Logic ---
-
-        toggleRequestsFeedBtn.addEventListener('click', () => {
-            postsFeedSection.classList.add('hidden');
-            requestsFeedSection.classList.remove('hidden');
-            createPostFab.classList.add('hidden'); // Hide FAB for posts
-            listenForRequests(); // Ensure requests are loaded when switching to this feed
-        });
 
         createRequestBtn.addEventListener('click', () => {
             selectedRequestTmdbItem = null;
@@ -2518,7 +2588,7 @@
 
         // General event listeners
         window.addEventListener('click', (event) => {
-            const modals = ['createMovieSeriesModal', 'editModal', 'confirmationModal', 'profileModal', 'linksModal', 'commentsModal', 'verificationModal', 'recentPostsModal', 'createRequestModal'];
+            const modals = ['createMovieSeriesModal', 'editModal', 'confirmationModal', 'linksModal', 'commentsModal', 'verificationModal', 'createRequestModal'];
             modals.forEach(modalId => {
                 const modalElement = document.getElementById(modalId);
                 if (modalElement && event.target === modalElement) {
