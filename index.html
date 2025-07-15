@@ -1,0 +1,2606 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drive+ Filmes & Séries</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom styles for Inter font and general layout */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 0;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        header {
+            width: 100%;
+            background-color: #ffffff;
+            padding: 8px 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .header-left img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain; /* Corrected: Prevent stretching */
+        }
+
+        .header-left h1 {
+            font-size: 1.75rem;
+        }
+        
+        .header-center {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            padding: 0 20px;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 8px 16px 8px 40px;
+            border-radius: 9999px;
+            border: 1px solid #e5e7eb;
+            background-color: #f3f4f6;
+            transition: all 0.2s ease-in-out;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #4f46e5;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .search-bar .fa-search {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 0.9rem; /* Corrected: Decreased search icon size */
+        }
+
+        /* Profile Icon in Header */
+        .profile-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            overflow: hidden;
+            border: 2px solid var(--profile-border-color, #4f46e5);
+            flex-shrink: 0;
+            transition: border-color 0.5s ease-in-out;
+        }
+
+        .profile-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Main Container Styles */
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background-color: #f0f2f5;
+            border-radius: 12px;
+            padding: 20px;
+            box-sizing: border-box;
+            margin-top: 16px;
+            margin-bottom: 16px;
+            flex-grow: 1;
+        }
+
+        /* Post and Comment Card Styles */
+        .post-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .post-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .post-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .comment-card {
+            background-color: #f8fafc;
+            border: 1px solid #e0e7ff;
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        /* Request Card Styles */
+        .request-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .request-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .request-card:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Request Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            /* Removed margin-left: 8px; to allow flexible positioning */
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .status-badge.seeking {
+            background-color: #ef4444; /* Red */
+            color: white;
+        }
+
+        .status-badge.found {
+            background-color: #22c55e; /* Green */
+            color: white;
+        }
+
+        .status-badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        /* Button Styles */
+        .btn-primary {
+            background-color: #4f46e5;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 3px 8px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-primary:hover {
+            background-color: #4338ca;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 6px rgba(107, 114, 128, 0.15);
+        }
+
+        .btn-secondary:hover {
+            background-color: #4b5563;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(107, 114, 128, 0.25);
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 3px 8px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.2s, transform 0.2s;
+            padding: 4px;
+        }
+
+        .btn-icon:hover {
+            color: #4b5563;
+            transform: scale(1.1);
+        }
+
+        .btn-like {
+            color: #6b7280;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .btn-like.liked {
+            color: #ef4444;
+        }
+
+        .btn-like:hover {
+            color: #ef4444;
+            transform: scale(1.1);
+        }
+
+        .btn-save {
+            color: #6b7280;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .btn-save.saved {
+            color: #4f46e5;
+        }
+
+        .btn-save:hover {
+            color: #4f46e5;
+            transform: scale(1.1);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        #profileModal {
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            position: relative;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            max-width: 500px; /* Default max-width */
+            width: 95%;
+            margin: auto;
+            box-sizing: border-box;
+            transform: translateY(0);
+            animation: modal-fade-in 0.3s ease-out forwards;
+        }
+
+        /* Expanded profile modal width */
+        #profileModal .modal-content {
+            max-width: 600px; /* Expanded width for profile modal */
+        }
+
+        /* Requests Feed Modal Width (now createRequestModal) */
+        #createRequestModal .modal-content {
+            max-width: 600px; /* Wider for requests feed */
+        }
+
+        /* Comments/Responses Modal Width */
+        #commentsModal .modal-content {
+            max-width: 600px; /* Wider for comments/responses */
+        }
+
+
+        @keyframes modal-fade-in {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-button {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            color: #9ca3af;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #4b5563;
+            text-decoration: none;
+        }
+
+        /* Message Box Styles */
+        .message-box {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            z-index: 1001;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .message-box.error {
+            background-color: #f44336;
+        }
+
+        .message-box.show {
+            opacity: 1;
+            display: block;
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4f46e5;
+            color: white;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 26px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            z-index: 900;
+        }
+
+        .fab:hover {
+            background-color: #4338ca;
+            transform: scale(1.08);
+        }
+
+        /* Profile Modal Picture */
+        .profile-modal-pic {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border: 3px solid var(--profile-border-color, #4f46e5);
+            margin: 0 auto 12px;
+            transition: border-color 0.5s ease-in-out;
+        }
+
+        .profile-modal-pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* GIF Grid and TMDB Results Grid */
+        .gif-grid, .tmdb-results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            padding: 6px;
+            border-radius: 8px;
+            background-color: #f3f4f6;
+            margin-top: 8px;
+        }
+
+        .gif-grid img, .tmdb-result-item img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .gif-grid img:hover, .tmdb-result-item img:hover {
+            transform: scale(1.05);
+        }
+
+        .gif-grid img.selected, .tmdb-result-item.selected {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+        }
+
+        .tmdb-result-item {
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            text-align: center;
+            padding-bottom: 4px;
+        }
+
+        .tmdb-result-item p {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #374151;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 2px;
+        }
+
+        /* Google Drive Colors for Animation */
+        .color-red { color: #ea4335; transition: color 1s ease-in-out; }
+        .color-green { color: #34a853; transition: color 1s ease-in-out; }
+        .color-yellow { color: #fbbc05; transition: color 1s ease-in-out; }
+        .color-blue { color: #4285f4; transition: color 1s ease-in-out; }
+
+        /* Like Explosion Animation */
+        @keyframes like-explosion {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; filter: hue-rotate(0deg); }
+            50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.7; filter: hue-rotate(180deg); }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; filter: hue-rotate(360deg); }
+        }
+        .like-effect {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: like-explosion 0.6s ease-out forwards;
+            z-index: 100;
+        }
+
+        /* Movie Post Specific Styles */
+        .movie-post-card {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            margin-top: 10px;
+        }
+
+        .movie-poster-container {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 120px;
+        }
+
+        .movie-post-poster {
+            width: 100%;
+            height: 180px;
+            border-radius: 8px;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 8px;
+        }
+
+        .movie-post-details {
+            flex-grow: 1;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            min-height: 180px;
+        }
+
+        .movie-post-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 6px;
+        }
+
+        .movie-post-synopsis {
+            font-size: 0.85rem;
+            color: #4b5563;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            flex-grow: 1;
+        }
+
+        .movie-post-synopsis .read-more-synopsis {
+            color: #4f46e5;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            margin-left: 4px;
+            transition: color 0.2s;
+        }
+        .movie-post-synopsis .read-more-synopsis:hover {
+            color: #4338ca;
+            text-decoration: underline;
+        }
+
+        .movie-post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: auto;
+            padding-top: 5px;
+        }
+
+        .movie-post-tags span {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            box-shadow: none;
+            color: white; /* Default to white text for new colored tags */
+        }
+
+        /* Custom tag colors */
+        .tag-color-red { background-color: #ea4335; }
+        .tag-color-green { background-color: #34a853; }
+        .tag-color-yellow { background-color: #fbbc05; }
+        .tag-color-blue { background-color: #4285f4; }
+        .tag-color-orange { background-color: #f28b00; }
+        .tag-color-darkblue { background-color: #1a73e8; }
+        .tag-color-purple { background-color: #8e24aa; }
+        .tag-color-default { background-color: #6b7280; }
+
+
+        .movie-post-link-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 15px;
+            background-color: #10b981;
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
+        }
+
+        .movie-post-link-btn:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .movie-post-link-btn i {
+            margin-right: 6px;
+        }
+
+        /* Input and Select Field Styles */
+        input[type="text"],
+        input[type="number"],
+        input[type="url"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #374151;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="url"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+        }
+        
+        /* Verification Badge Styles */
+        .verification-badge {
+            width: 16px;
+            height: 16px;
+            display: none;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .verification-badge.show {
+            display: inline-block;
+        }
+        
+        .profile-verification-icon {
+            color: #1d9bf0;
+            cursor: pointer;
+            margin-left: 8px;
+            font-size: 1.2rem;
+            transition: transform 0.2s;
+        }
+        .profile-verification-icon:hover {
+            transform: scale(1.1);
+        }
+
+        /* Watch Later Sidebar Styles */
+        #watchLaterSidebar {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 300px;
+            height: 100%;
+            background-color: #ffffff;
+            box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+            transition: right 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #watchLaterSidebar.open {
+            right: 0;
+        }
+
+        #sidebarOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+        }
+
+        #sidebarOverlay.open {
+            display: block;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .saved-posts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .sidebar-post-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .sidebar-poster {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 2 / 3;
+            object-fit: cover;
+        }
+
+        .sidebar-post-access-btn {
+            background-color: #10b981;
+            color: white;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            text-align: center;
+            width: calc(100% - 16px);
+            margin: 0 8px 8px 8px;
+            border: none;
+        }
+
+        .sidebar-post-access-btn:hover {
+            background-color: #059669;
+        }
+
+        .sidebar-post-remove-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 12px;
+            line-height: 22px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            z-index: 10;
+        }
+
+        .sidebar-post-remove-btn:hover {
+            background-color: #ef4444;
+            transform: scale(1.1);
+        }
+
+        /* Recent Posts Modal Specific Styles */
+        #recentPostsModal .modal-content {
+            max-width: 600px;
+        }
+
+        .recent-posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            max-height: 60vh; /* Limit height for scrolling */
+            overflow-y: auto;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #e5e7eb;
+        }
+
+        .recent-post-item {
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            padding-bottom: 10px;
+            border: 3px solid transparent; /* Default border */
+            transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .recent-post-item.highlight {
+            border-color: #facc15; /* Yellow highlight */
+            box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.4);
+        }
+
+        .recent-post-item img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 8px;
+        }
+
+        .recent-post-item h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+            padding: 0 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .recent-post-item p {
+            font-size: 0.75rem;
+            color: #6b7280;
+            padding: 0 8px;
+            margin-bottom: 8px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header-center {
+                padding: 0 10px;
+            }
+            .header-left h1 {
+                display: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .profile-icon {
+                width: 40px;
+                height: 40px;
+            }
+            .fab {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+                bottom: 15px;
+                right: 15px;
+            }
+            .modal-content {
+                padding: 20px;
+            }
+            .close-button {
+                font-size: 24px;
+                top: 10px;
+                right: 10px;
+            }
+            .movie-post-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .movie-poster-container {
+                width: 100px;
+            }
+            .movie-post-poster {
+                width: 100%;
+                height: 150px;
+            }
+            .movie-post-details {
+                text-align: center;
+                min-height: auto;
+            }
+            .movie-post-tags {
+                justify-content: center;
+            }
+            #watchLaterSidebar {
+                width: 280px;
+                right: -280px;
+            }
+            .recent-posts-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div id="headerLogoContainer" class="header-left">
+            <img src="https://cloud.gmelius.com/public/logos/google/Google_Drive_Logo_512px.png" alt="Google Drive Logo" onerror="this.onerror=null;this.src='https://placehold.co/40x40/cccccc/000000?text=Logo';">
+            <h1 id="drivePlusTitle" class="text-2xl font-bold text-gray-900">Drive+</h1>
+        </div>
+        <div class="header-center">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar no feed...">
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <!-- New Requests Icon -->
+            <button id="toggleRequestsFeedBtn" class="btn-icon text-purple-600 hover:text-purple-800">
+                <i class="fas fa-clipboard-list text-xl"></i>
+            </button>
+            <!-- New Fire Icon for Recent Posts - Colored -->
+            <button id="toggleRecentPostsBtn" class="btn-icon text-yellow-500 hover:text-orange-500">
+                <i class="fas fa-fire text-xl"></i>
+            </button>
+            <!-- Bookmark Icon - Colored -->
+            <button id="toggleSidebarBtn" class="btn-icon text-blue-600 hover:text-blue-800">
+                <i class="fas fa-bookmark text-xl"></i>
+            </button>
+            <div id="profileIcon" class="profile-icon">
+                <img id="headerProfilePic" src="https://placehold.co/50x50/cccccc/000000?text=P" alt="Profile Picture" onerror="this.onerror=null;this.src='https://placehold.co/50x50/cccccc/000000?text=P';">
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Posts Display Section -->
+        <div id="postsFeedSection">
+            <div id="postsContainer">
+                <p class="text-center text-gray-500">Carregando postagens...</p>
+            </div>
+        </div>
+
+        <!-- Requests Display Section -->
+        <div id="requestsFeedSection" class="hidden">
+            <button id="createRequestBtn" class="btn-primary w-full mb-4 py-3 text-lg">
+                <i class="fas fa-plus mr-2"></i> Fazer Novo Pedido
+            </button>
+            <div id="requestsContainer" class="flex flex-col gap-4">
+                <p class="text-center text-gray-500">Carregando pedidos...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button for Posts -->
+    <div id="createPostFab" class="fab">
+        <i class="fas fa-plus"></i>
+    </div>
+
+    <!-- Watch Later Sidebar -->
+    <aside id="watchLaterSidebar">
+        <div class="sidebar-header">
+            <h3 class="text-xl font-bold text-gray-800">Assistir Mais Tarde</h3>
+            <button class="btn-icon text-gray-600" onclick="window.toggleSidebar()"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="savedPostsContainer" class="saved-posts-grid">
+            <p class="text-center text-gray-500 text-sm col-span-2">Nenhuma postagem salva ainda.</p>
+        </div>
+    </aside>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" onclick="window.toggleSidebar()"></div>
+
+    <!-- Create Movie/Series Post Modal -->
+    <div id="createMovieSeriesModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.closeModal('createMovieSeriesModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Publicar Filme ou Série</h2>
+
+            <div class="mb-4">
+                <label for="tmdbSearchInput" class="block text-gray-700 text-sm font-bold mb-2">Buscar Filme/Série (TMDB)</label>
+                <input type="text" id="tmdbSearchInput" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Digite o nome do filme ou série...">
+                <div id="tmdbSearchResults" class="tmdb-results-grid">
+                    <p class="text-center text-gray-500 col-span-full">Comece a digitar para buscar...</p>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="postTitle" class="block text-gray-700 text-sm font-bold mb-2">Título</label>
+                <input type="text" id="postTitle" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Título do Filme/Série" readonly>
+            </div>
+
+            <div class="mb-4">
+                <label for="postPosterUrl" class="block text-gray-700 text-sm font-bold mb-2">URL do Pôster (Opcional)</label>
+                <input type="text" id="postPosterUrl" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="URL do pôster" readonly>
+            </div>
+
+            <div class="mb-4">
+                <label for="postSynopsis" class="block text-gray-700 text-sm font-bold mb-2">Sinopse</label>
+                <textarea id="postSynopsis" class="w-full p-3 border border-gray-300 rounded-lg" rows="5" placeholder="Sinopse do Filme/Série" readonly></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="postQuality" class="block text-gray-700 text-sm font-bold mb-2">Qualidade</label>
+                    <select id="postQuality" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="">Selecione a Qualidade</option>
+                        <option value="HD">HD</option>
+                        <option value="FullHD">FullHD</option>
+                        <option value="4K">4K</option>
+                        <option value="Cinema">Cinema</option>
+                        <option value="Outra">Outra</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="postAudioLanguage" class="block text-gray-700 text-sm font-bold mb-2">Idioma do Áudio</label>
+                    <select id="postAudioLanguage" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="">Selecione o Idioma</option>
+                        <option value="Dublado">Dublado</option>
+                        <option value="Original">Original</option>
+                        <option value="Legendado">Legendado</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Links do Google Drive (Obrigatório)</label>
+                <div id="driveLinksContainer">
+                    <div class="flex gap-2 mb-2">
+                        <input type="url" class="flex-grow p-3 border border-gray-300 rounded-lg drive-link-url" placeholder="URL do Google Drive" required>
+                        <select class="p-3 border border-gray-300 rounded-lg drive-link-language">
+                            <option value="Dublado">Dublado</option>
+                            <option value="Original">Original</option>
+                            <option value="Legendado">Legendado</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                        <button type="button" class="btn-danger p-3 rounded-lg remove-drive-link"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <button type="button" id="addDriveLinkBtn" class="btn-secondary w-full mt-2"><i class="fas fa-plus mr-2"></i> Adicionar Mais Link</button>
+            </div>
+
+            <button id="publishMovieSeriesBtn" class="btn-primary w-full">Publicar</button>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.closeModal('editModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Editar Postagem</h2>
+
+            <div class="mb-4">
+                <label for="editPostTitle" class="block text-gray-700 text-sm font-bold mb-2">Título</label>
+                <input type="text" id="editPostTitle" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Título do Filme/Série">
+            </div>
+
+            <div class="mb-4">
+                <label for="editPostPosterUrl" class="block text-gray-700 text-sm font-bold mb-2">URL do Pôster</label>
+                <input type="text" id="editPostPosterUrl" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="URL do pôster">
+            </div>
+
+            <div class="mb-4">
+                <label for="editPostSynopsis" class="block text-gray-700 text-sm font-bold mb-2">Sinopse</label>
+                <textarea id="editPostSynopsis" class="w-full p-3 border border-gray-300 rounded-lg" rows="5" placeholder="Sinopse do Filme/Série"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="editPostQuality" class="block text-gray-700 text-sm font-bold mb-2">Qualidade</label>
+                    <select id="editPostQuality" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="">Selecione a Qualidade</option>
+                        <option value="HD">HD</option>
+                        <option value="FullHD">FullHD</option>
+                        <option value="4K">4K</option>
+                        <option value="Cinema">Cinema</option>
+                        <option value="Outra">Outra</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="editPostAudioLanguage" class="block text-gray-700 text-sm font-bold mb-2">Idioma do Áudio</label>
+                    <select id="editPostAudioLanguage" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="">Selecione o Idioma</option>
+                        <option value="Dublado">Dublado</option>
+                        <option value="Original">Original</option>
+                        <option value="Legendado">Legendado</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Links do Google Drive</label>
+                <div id="editDriveLinksContainer"></div>
+                <button type="button" id="addEditDriveLinkBtn" class="btn-secondary w-full mt-2"><i class="fas fa-plus mr-2"></i> Adicionar Mais Link</button>
+            </div>
+
+            <button id="saveEditBtn" class="btn-primary w-full">Salvar Alterações</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.closeModal('confirmationModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Confirmar Exclusão</h2>
+            <p class="text-gray-700 mb-6">Tem certeza de que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+            <div class="flex justify-end gap-4">
+                <button id="cancelDeleteBtn" class="btn-secondary" onclick="window.closeModal('confirmationModal')">Cancelar</button>
+                <button id="confirmDeleteBtn" class="btn-danger">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content text-center">
+            <span class="close-button" onclick="window.closeModal('profileModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Meu Perfil</h2>
+
+            <div class="profile-modal-pic">
+                <img id="profilePicDisplay" src="https://placehold.co/80x80/cccccc/000000?text=P" alt="Profile Picture" onerror="this.onerror=null;this.src='https://placehold.co/80x80/cccccc/000000?text=P';">
+            </div>
+            
+            <p class="text-sm text-gray-600 mb-4">ID: <span id="profileUserIdDisplay" class="font-mono text-gray-800 break-all"></span></p>
+            
+            <hr class="my-4">
+
+            <!-- Section for Name Change -->
+            <div class="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center justify-center">
+                    Alterar Nome de Usuário
+                    <img id="profileVerificationBadge" src="https://img.icons8.com/?size=512&id=2sZ0sdlG9kWP&format=png" alt="Verificado" class="verification-badge">
+                    <i id="openVerificationModalIcon" class="fas fa-check-circle profile-verification-icon" title="Solicitar Verificação"></i>
+                </h3>
+                <div class="flex items-center gap-2 mb-3">
+                    <input type="text" id="profileNameInput" class="flex-grow p-3 border border-gray-300 rounded-lg text-gray-800 text-center font-semibold" placeholder="Seu Nome de Usuário">
+                    <button id="saveNameBtn" class="btn-primary py-2 px-4">Salvar</button>
+                </div>
+            </div>
+
+            <!-- Section for Profile Image Change -->
+            <div class="mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3">Alterar Imagem de Perfil</h3>
+                <div class="mb-2">
+                    <label for="profileImageUrlInput" class="block text-gray-700 text-sm font-bold mb-2">URL da Imagem (Apenas Verificados)</label>
+                    <input type="url" id="profileImageUrlInput" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Cole a URL da imagem aqui..." disabled>
+                </div>
+                <p class="text-sm text-gray-500 my-2">OU</p>
+                <div class="flex mb-4 gap-2">
+                    <input type="text" id="gifSearchInput" class="flex-grow p-3 border border-gray-300 rounded-lg" placeholder="Pesquisar GIFs (ex: gato, engraçado)">
+                    <button id="searchGifBtn" class="btn-primary py-2 px-4">Buscar</button>
+                </div>
+                <div id="gifResults" class="gif-grid mb-4">
+                    <p class="text-center text-gray-500">Pesquise GIFs acima...</p>
+                </div>
+                <button id="saveImageBtn" class="btn-primary w-full">Salvar Imagem</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Verification Modal -->
+    <div id="verificationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.closeModal('verificationModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Selo de Verificação</h2>
+            <p class="text-gray-600 mb-4 text-sm">Para garantir o selo verificado, você precisa ter mais de 50 postagens com links funcionais e confiáveis.</p>
+            
+            <hr class="my-4">
+
+            <h3 class="text-lg font-semibold text-gray-700 mb-3">Formulário de Solicitação</h3>
+            <form id="verificationForm">
+                <div class="mb-3">
+                    <label for="verificationName" class="block text-gray-700 text-sm font-bold mb-2">Nome</label>
+                    <input type="text" id="verificationName" class="w-full" required>
+                </div>
+                <div class="mb-3">
+                    <label for="verificationAge" class="block text-gray-700 text-sm font-bold mb-2">Idade</label>
+                    <input type="number" id="verificationAge" class="w-full" required>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Possui 50 ou mais postagens?</label>
+                    <div class="flex gap-4">
+                        <label><input type="radio" name="has50posts" value="Sim" required> Sim</label>
+                        <label><input type="radio" name="has50posts" value="Não"> Não</label>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="verificationReason" class="block text-gray-700 text-sm font-bold mb-2">Por que quer ganhar o selo de verificação?</label>
+                    <textarea id="verificationReason" class="w-full" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn-primary w-full">Enviar Solicitação</button>
+            </form>
+
+            <hr class="my-4">
+
+            <h3 class="text-lg font-semibold text-gray-700 mb-3">Ativar Selo</h3>
+            <div class="flex gap-2">
+                <input type="text" id="verificationCodeInput" class="flex-grow" placeholder="Digite o código de ativação">
+                <button id="submitVerificationCodeBtn" class="btn-secondary">Ativar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Box -->
+    <div id="messageBox" class="message-box"></div>
+
+    <!-- Links Modal -->
+    <div id="linksModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.closeModal('linksModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4" id="linksModalTitle">Links de Acesso</h2>
+            <div id="linksModalContent" class="flex flex-col gap-3"></div>
+        </div>
+    </div>
+
+    <!-- Discussion Modal (for posts comments and request responses) -->
+    <div id="commentsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.closeModal('commentsModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4" id="discussionModalTitle">Discussão</h2>
+            <div id="discussionModalContent" class="flex flex-col gap-3 mb-4"></div>
+            <textarea id="discussionModalInput" class="w-full p-3 border border-gray-300 rounded-lg mb-3" rows="2" placeholder="Adicionar um comentário..."></textarea>
+            <button id="addDiscussionModalBtn" class="btn-primary w-full">Adicionar</button>
+        </div>
+    </div>
+
+    <!-- Recent Posts Modal -->
+    <div id="recentPostsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.closeModal('recentPostsModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Lançamentos Recentes</h2>
+            <div id="recentPostsContainer" class="recent-posts-grid">
+                <p class="text-center text-gray-500 col-span-full">Carregando lançamentos...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Request Modal -->
+    <div id="createRequestModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.closeModal('createRequestModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Fazer Novo Pedido</h2>
+
+            <div class="mb-4">
+                <label for="requestTmdbSearchInput" class="block text-gray-700 text-sm font-bold mb-2">Buscar Filme/Série (TMDB)</label>
+                <input type="text" id="requestTmdbSearchInput" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Digite o nome do filme ou série...">
+                <div id="requestTmdbSearchResults" class="tmdb-results-grid">
+                    <p class="text-center text-gray-500 col-span-full">Comece a digitar para buscar...</p>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="requestTitle" class="block text-gray-700 text-sm font-bold mb-2">Título</label>
+                <input type="text" id="requestTitle" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Título do Filme/Série" readonly>
+            </div>
+
+            <div class="mb-4">
+                <label for="requestPosterUrl" class="block text-gray-700 text-sm font-bold mb-2">URL do Pôster (Opcional)</label>
+                <input type="text" id="requestPosterUrl" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="URL do pôster" readonly>
+            </div>
+
+            <div class="mb-4">
+                <label for="requestSynopsis" class="block text-gray-700 text-sm font-bold mb-2">Sinopse</label>
+                <textarea id="requestSynopsis" class="w-full p-3 border border-gray-300 rounded-lg" rows="5" placeholder="Sinopse do Filme/Série" readonly></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label for="requestText" class="block text-gray-700 text-sm font-bold mb-2">Seu Pedido (Opcional)</label>
+                <textarea id="requestText" class="w-full p-3 border border-gray-300 rounded-lg" rows="3" placeholder="Ex: 'Procuro por este filme dublado em 4K'"></textarea>
+            </div>
+
+            <button id="submitRequestBtn" class="btn-primary w-full">Fazer Pedido</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, arrayUnion, arrayRemove, getDoc, setDoc, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPQgaKW00z_wEqm-p-b0XmDzPLrGczhF8",
+            authDomain: "fir-2be42.firebaseapp.com",
+            projectId: "fir-2be42",
+            storageBucket: "fir-2be42.appspot.com",
+            messagingSenderId: "1074317771756",
+            appId: "1:1074317771756:web:02506e646653bbbfa576c9"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Global variables
+        let currentUserId = null;
+        let usersCache = {};
+        let allPostsCache = {}; // Cache for all posts by ID
+        let allRequestsCache = {}; // Cache for all requests by ID
+        const appId = firebaseConfig.projectId;
+        let allPostsData = []; // Array of all posts
+        let allRequestsData = []; // Array of all requests
+        let isUserVerified = false; // Local state for verification
+
+        // TMDB API
+        const TMDB_API_KEY = "d0f7e2c414b1efff7b000ae9b681ed1b";
+        const TMDB_BASE_URL = "https://api.themoviedb.org/3";
+        const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+        let tmdbGenres = {};
+
+        // Tenor API - Using the functional key from user's provided code
+        const TENOR_API_KEY = "LIVDSRZULELA";
+
+        // DOM Elements
+        const postsFeedSection = document.getElementById('postsFeedSection');
+        const requestsFeedSection = document.getElementById('requestsFeedSection');
+        const postsContainer = document.getElementById('postsContainer');
+        const requestsContainer = document.getElementById('requestsContainer'); // This will hold the rendered requests
+        const createPostFab = document.getElementById('createPostFab');
+        const messageBox = document.getElementById('messageBox');
+        const createMovieSeriesModal = document.getElementById('createMovieSeriesModal');
+        const tmdbSearchInput = document.getElementById('tmdbSearchInput');
+        const tmdbSearchResults = document.getElementById('tmdbSearchResults');
+        const postTitleInput = document.getElementById('postTitle');
+        const postPosterUrlInput = document.getElementById('postPosterUrl');
+        const postSynopsisInput = document.getElementById('postSynopsis');
+        const postQualitySelect = document.getElementById('postQuality');
+        const postAudioLanguageSelect = document.getElementById('postAudioLanguage');
+        const driveLinksContainer = document.getElementById('driveLinksContainer');
+        const addDriveLinkBtn = document.getElementById('addDriveLinkBtn');
+        const publishMovieSeriesBtn = document.getElementById('publishMovieSeriesBtn');
+        const editModal = document.getElementById('editModal');
+        const editPostTitleInput = document.getElementById('editPostTitle');
+        const editPostPosterUrlInput = document.getElementById('editPostPosterUrl');
+        const editPostSynopsisInput = document.getElementById('editPostSynopsis');
+        const editPostQualitySelect = document.getElementById('editPostQuality');
+        const editPostAudioLanguageSelect = document.getElementById('editPostAudioLanguage');
+        const editDriveLinksContainer = document.getElementById('editDriveLinksContainer');
+        const addEditDriveLinkBtn = document.getElementById('addEditDriveLinkBtn');
+        const saveEditBtn = document.getElementById('saveEditBtn');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const profileIcon = document.getElementById('profileIcon');
+        const headerProfilePic = document.getElementById('headerProfilePic');
+        const profileModal = document.getElementById('profileModal');
+        const profilePicDisplay = document.getElementById('profilePicDisplay');
+        const profileNameInput = document.getElementById('profileNameInput');
+        const profileUserIdDisplay = document.getElementById('profileUserIdDisplay');
+        const gifSearchInput = document.getElementById('gifSearchInput');
+        const searchGifBtn = document.getElementById('searchGifBtn');
+        const gifResults = document.getElementById('gifResults');
+        const saveNameBtn = document.getElementById('saveNameBtn'); // New: Save Name button
+        const saveImageBtn = document.getElementById('saveImageBtn'); // New: Save Image button
+        const profileImageUrlInput = document.getElementById('profileImageUrlInput');
+        const linksModal = document.getElementById('linksModal');
+        const linksModalTitle = document.getElementById('linksModalTitle');
+        const linksModalContent = document.getElementById('linksModalContent');
+
+        // Renamed elements for generic discussion modal
+        const discussionModal = document.getElementById('commentsModal'); // Reusing commentsModal
+        const discussionModalTitle = document.getElementById('discussionModalTitle');
+        const discussionModalContent = document.getElementById('discussionModalContent');
+        const discussionModalInput = document.getElementById('discussionModalInput');
+        const addDiscussionModalBtn = document.getElementById('addDiscussionModalBtn');
+
+        const verificationModal = document.getElementById('verificationModal');
+        const openVerificationModalIcon = document.getElementById('openVerificationModalIcon');
+        const verificationForm = document.getElementById('verificationForm');
+        const verificationCodeInput = document.getElementById('verificationCodeInput');
+        const submitVerificationCodeBtn = document.getElementById('submitVerificationCodeBtn');
+        const profileVerificationBadge = document.getElementById('profileVerificationBadge');
+        const headerLogoContainer = document.getElementById('headerLogoContainer');
+        const searchInput = document.getElementById('searchInput');
+
+        // Sidebar Elements
+        const watchLaterSidebar = document.getElementById('watchLaterSidebar');
+        const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+        const savedPostsContainer = document.getElementById('savedPostsContainer');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        // New Recent Posts Modal Elements
+        const recentPostsModal = document.getElementById('recentPostsModal');
+        const recentPostsContainer = document.getElementById('recentPostsContainer');
+        const toggleRecentPostsBtn = document.getElementById('toggleRecentPostsBtn');
+
+        // New Request Feature Elements
+        const toggleRequestsFeedBtn = document.getElementById('toggleRequestsFeedBtn');
+        const createRequestBtn = document.getElementById('createRequestBtn'); // Button inside requests feed
+        const createRequestModal = document.getElementById('createRequestModal'); // Modal for creating a new request
+        const requestTmdbSearchInput = document.getElementById('requestTmdbSearchInput');
+        const requestTmdbSearchResults = document.getElementById('requestTmdbSearchResults');
+        const requestTitleInput = document.getElementById('requestTitle');
+        const requestPosterUrlInput = document.getElementById('requestPosterUrl');
+        const requestSynopsisInput = document.getElementById('requestSynopsis');
+        const requestTextarea = document.getElementById('requestText');
+        const submitRequestBtn = document.getElementById('submitRequestBtn');
+
+        let editingItemId = null;
+        let editingItemType = null;
+        let editingPostId = null; // Used for comments deletion
+        let editingRequestId = null; // Used for responses deletion
+        let selectedGifUrl = null;
+        let selectedTmdbItem = null; // For posts
+        let selectedRequestTmdbItem = null; // For requests
+        let currentDiscussionType = null; // 'post' or 'request'
+        let currentDiscussionItemId = null; // ID of the post or request
+
+        // --- Utility Functions ---
+        function showMessageBox(message, type = 'success') {
+            messageBox.textContent = message;
+            messageBox.className = 'message-box show';
+            messageBox.classList.toggle('error', type === 'error');
+            setTimeout(() => messageBox.classList.remove('show'), 3000);
+        }
+
+        function openModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }
+        window.closeModal = function(modalId) { document.getElementById(modalId).style.display = 'none'; };
+
+        function debounce(func, delay) {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        // Function to extract Google Drive file ID
+        function getDriveFileId(url) {
+            const regex = /(?:https?:\/\/)?(?:www\.)?drive\.google\.com\/(?:file\/d\/|open\?id=)([\w-]+)/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+
+        // Function to initiate Google Drive download
+        function downloadDriveLink(driveUrl) {
+            const fileId = getDriveFileId(driveUrl);
+            if (fileId) {
+                const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.target = '_blank'; // Open in a new tab to initiate download
+                a.download = ''; // Suggests a download filename (can be empty)
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showMessageBox("Download iniciado!", "success");
+            } else {
+                showMessageBox("Não foi possível extrair o ID do arquivo do Google Drive para download.", "error");
+            }
+        }
+
+        // --- Firebase & App Initialization ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                profileUserIdDisplay.textContent = currentUserId;
+                await listenForAllUsers();
+                await fetchOrCreateUserProfile(currentUserId);
+                await fetchTmdbGenres();
+                listenForPosts();
+                listenForSavedPosts();
+                listenForRequests(); // Start listening for requests
+            } else {
+                signInAnonymously(auth).catch(error => {
+                    console.error("Authentication Error:", error);
+                    showMessageBox("Erro de autenticação.", "error");
+                });
+            }
+        });
+
+        // --- User Profile & Verification ---
+        function listenForAllUsers() {
+            const usersRef = collection(db, `artifacts/${appId}/public/data/users`);
+            return onSnapshot(usersRef, (snapshot) => {
+                snapshot.docs.forEach(doc => {
+                    usersCache[doc.id] = doc.data();
+                });
+                if (currentUserId && usersCache[currentUserId]) {
+                    isUserVerified = !!usersCache[currentUserId].isVerified;
+                    profileImageUrlInput.disabled = !isUserVerified;
+                }
+                filterAndRenderPosts(searchInput.value);
+                filterAndRenderRequests(); // Update requests when user data changes
+            }, (error) => console.error("Error listening for user profiles:", error));
+        }
+        
+        function updateVerificationStatusUI() {
+            if (!currentUserId) return;
+            const currentUserData = usersCache[currentUserId] || {};
+            isUserVerified = !!currentUserData.isVerified;
+            profileVerificationBadge.classList.toggle('show', isUserVerified);
+            profileImageUrlInput.disabled = !isUserVerified;
+        }
+
+        async function fetchOrCreateUserProfile(userId) {
+            const userRef = doc(db, `artifacts/${appId}/public/data/users`, userId);
+            try {
+                const userDoc = await getDoc(userRef);
+                if (!userDoc.exists()) {
+                    await setDoc(userRef, {
+                        userName: "Usuário Novo",
+                        profilePicUrl: "https://placehold.co/40x40/cccccc/000000?text=P",
+                        createdAt: serverTimestamp(),
+                        isVerified: false
+                    });
+                }
+                const userData = userDoc.exists() ? userDoc.data() : {};
+                profileNameInput.value = userData.userName || "Usuário Novo";
+                headerProfilePic.src = userData.profilePicUrl || "https://placehold.co/50x50/cccccc/000000?text=P";
+                profilePicDisplay.src = userData.profilePicUrl || "https://placehold.co/80x80/cccccc/000000?text=P";
+                updateVerificationStatusUI();
+            } catch (error) {
+                console.error("Error fetching/creating user profile:", error);
+            }
+        }
+
+        // New event listener for saving user name
+        saveNameBtn.addEventListener('click', async () => {
+            const newName = profileNameInput.value.trim();
+            if (!currentUserId || !newName) return;
+            
+            try {
+                const userRef = doc(db, `artifacts/${appId}/public/data/users`, currentUserId);
+                await updateDoc(userRef, { userName: newName });
+                
+                if(usersCache[currentUserId]) {
+                   usersCache[currentUserId].userName = newName;
+                }
+                showMessageBox("Nome de usuário atualizado com sucesso!");
+            } catch (error) {
+                console.error("Error saving user name:", error);
+                showMessageBox("Erro ao salvar nome de usuário.", "error");
+            }
+        });
+
+        // New event listener for saving profile image
+        saveImageBtn.addEventListener('click', async () => {
+            if (!currentUserId) return;
+            
+            const currentUserData = usersCache[currentUserId] || {};
+            const imageUrl = profileImageUrlInput.value.trim();
+            let newProfilePic;
+
+            if (isUserVerified && imageUrl) {
+                newProfilePic = imageUrl;
+            } else {
+                newProfilePic = selectedGifUrl || currentUserData.profilePicUrl;
+            }
+
+            try {
+                const userRef = doc(db, `artifacts/${appId}/public/data/users`, currentUserId);
+                await updateDoc(userRef, { profilePicUrl: newProfilePic });
+                
+                if(usersCache[currentUserId]) {
+                   usersCache[currentUserId].profilePicUrl = newProfilePic;
+                }
+                headerProfilePic.src = newProfilePic;
+                profilePicDisplay.src = newProfilePic;
+
+                showMessageBox("Imagem de perfil atualizada com sucesso!");
+            } catch (error) {
+                console.error("Error saving profile image:", error);
+                showMessageBox("Erro ao salvar imagem de perfil.", "error");
+            }
+        });
+
+
+        profileIcon.addEventListener('click', () => {
+            if (!currentUserId) return;
+            const userData = usersCache[currentUserId] || {};
+            profileNameInput.value = userData.userName || "Usuário Novo";
+            profilePicDisplay.src = userData.profilePicUrl || "https://placehold.co/80x80/cccccc/000000?text=P";
+            selectedGifUrl = null;
+            gifResults.innerHTML = '<p class="text-center text-gray-500">Pesquise GIFs acima...</p>';
+            profileImageUrlInput.value = ''; // Clear URL input if GIF is selected
+            updateVerificationStatusUI();
+            openModal('profileModal');
+        });
+
+        openVerificationModalIcon.addEventListener('click', () => openModal('verificationModal'));
+
+        verificationForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('verificationName').value;
+            const age = document.getElementById('verificationAge').value;
+            const has50 = document.querySelector('input[name="has50posts"]:checked').value;
+            const reason = document.getElementById('verificationReason').value;
+            const message = `Selo de verificação\n\nNome: ${name}\nIdade: ${age}\nPossui +50 posts: ${has50}\nMotivo: ${reason}`;
+            window.open(`https://wa.me/5521993837026?text=${encodeURIComponent(message)}`, '_blank');
+        });
+
+        submitVerificationCodeBtn.addEventListener('click', async () => {
+            const code = verificationCodeInput.value.trim();
+            if (code === 'vipleo') {
+                if (!currentUserId) return showMessageBox("Usuário não autenticado.", "error");
+                const userRef = doc(db, `artifacts/${appId}/public/data/users`, currentUserId);
+                try {
+                    await updateDoc(userRef, { isVerified: true });
+                    isUserVerified = true;
+                    profileImageUrlInput.disabled = false;
+                    showMessageBox("Selo de verificação ativado! O campo de URL foi desbloqueado.", "success");
+                    window.closeModal('verificationModal');
+                    updateVerificationStatusUI();
+                } catch (error) {
+                    console.error("Error activating verification:", error);
+                    showMessageBox("Erro ao ativar o selo.", "error");
+                }
+            } else {
+                showMessageBox("Código de ativação incorreto.", "error");
+            }
+        });
+        
+        // --- Tenor GIF Integration ---
+        async function fetchGifs(searchTerm) {
+            if (!searchTerm) return;
+            gifResults.innerHTML = '<p class="text-center text-gray-500">Buscando GIFs...</p>';
+            try {
+                const response = await fetch(`https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(searchTerm)}&key=${TENOR_API_KEY}&client_key=driveplus&limit=10&media_filter=gif`);
+                const data = await response.json();
+                gifResults.innerHTML = '';
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach(gif => {
+                        const gifUrl = gif.media_formats?.gif?.url;
+                        if (gifUrl) {
+                            const img = document.createElement('img');
+                            img.src = gifUrl;
+                            img.alt = gif.content_description || 'GIF';
+                            img.onerror = function() { this.onerror=null; this.src='https://placehold.co/100x100/cccccc/000000?text=GIF+Error'; };
+                            img.addEventListener('click', () => {
+                                document.querySelectorAll('.gif-grid img').forEach(i => i.classList.remove('selected'));
+                                img.classList.add('selected');
+                                selectedGifUrl = gifUrl;
+                                profilePicDisplay.src = selectedGifUrl;
+                                profileImageUrlInput.value = ''; // Clear URL input if GIF is selected
+                            });
+                            gifResults.appendChild(img);
+                        }
+                    });
+                } else {
+                    gifResults.innerHTML = '<p class="text-center text-gray-500">Nenhum GIF encontrado.</p>';
+                }
+            } catch (error) {
+                console.error("Error fetching GIFs:", error);
+                gifResults.innerHTML = '<p class="text-center text-red-500">Erro ao buscar GIFs.</p>';
+            }
+        }
+        const debouncedFetchGifs = debounce(fetchGifs, 300);
+        gifSearchInput.addEventListener('input', () => debouncedFetchGifs(gifSearchInput.value.trim()));
+        searchGifBtn.addEventListener('click', () => fetchGifs(gifSearchInput.value.trim()));
+
+        // --- Genre, Quality, Audio Language Color Mappings (Google Drive Original Colors) ---
+        // Using common TMDB genre IDs and mapping them to specific Google Drive-like colors
+        const genreColorMap = {
+            // Primary Google Drive Colors: Green, Yellow, Blue, Red
+            // Additional for variety: Orange, Dark Blue, Purple
+            
+            // Action, Adventure, Animation, Comedy, Crime
+            28: 'tag-color-red',       // Ação (Red)
+            12: 'tag-color-blue',      // Aventura (Blue)
+            16: 'tag-color-green',     // Animação (Green)
+            35: 'tag-color-yellow',    // Comédia (Yellow)
+            80: 'tag-color-darkblue',  // Crime (Dark Blue)
+            
+            // Documentary, Drama, Family, Fantasy, History
+            99: 'tag-color-blue',      // Documentário (Blue - as per image example)
+            18: 'tag-color-green',     // Drama (Green - as per image example)
+            10751: 'tag-color-yellow', // Família (Yellow)
+            14: 'tag-color-purple',    // Fantasia (Purple)
+            36: 'tag-color-orange',    // História (Orange)
+            
+            // Horror, Music, Mystery, Romance, Science Fiction
+            27: 'tag-color-red',       // Terror (Red)
+            10402: 'tag-color-green',  // Música (Green)
+            9648: 'tag-color-darkblue',// Mistério (Dark Blue)
+            10749: 'tag-color-yellow', // Romance (Yellow)
+            878: 'tag-color-blue',     // Ficção Científica (Blue)
+            
+            // TV Movie, Thriller, War, Western, Reality, Talk, News
+            10770: 'tag-color-orange', // Filme de TV (Orange)
+            53: 'tag-color-red',       // Thriller (Red)
+            10752: 'tag-color-green',  // Guerra (Green)
+            37: 'tag-color-blue',      // Faroeste (Blue)
+            10764: 'tag-color-yellow', // Reality (Yellow)
+            10767: 'tag-color-darkblue',// Talk (Dark Blue)
+            10763: 'tag-color-orange'  // Notícias (Orange)
+        };
+
+        const qualityColorMap = {
+            'HD': 'tag-color-blue',
+            'FullHD': 'tag-color-red', // As per image example
+            '4K': 'tag-color-green',
+            'Cinema': 'tag-color-orange',
+            'Outra': 'tag-color-default'
+        };
+
+        const audioColorMap = {
+            'Dublado': 'tag-color-purple', // As per image example
+            'Original': 'tag-color-darkblue',
+            'Legendado': 'tag-color-yellow',
+            'Outro': 'tag-color-default'
+        };
+
+        function getGenreColorClass(genreId) {
+            return genreColorMap[genreId] || 'tag-color-default';
+        }
+
+        function getQualityColorClass(quality) {
+            return qualityColorMap[quality] || 'tag-color-default';
+        }
+
+        function getAudioColorClass(audioLanguage) {
+            return audioColorMap[audioLanguage] || 'tag-color-default';
+        }
+
+
+        // --- Post Rendering & Search ---
+        function renderPost(post) {
+            let postElement = document.getElementById(`post-${post.id}`);
+            const createNewPostElement = !postElement;
+            if (createNewPostElement) {
+                postElement = document.createElement('div');
+                postElement.id = `post-${post.id}`;
+                postElement.className = 'post-card';
+            }
+
+            const isOwner = currentUserId === post.userId;
+            const likedByCurrentUser = post.likes?.includes(currentUserId);
+            const savedPosts = JSON.parse(localStorage.getItem(`drivePlus_savedPosts_${currentUserId}`) || '[]');
+            const savedByCurrentUser = savedPosts.includes(post.id);
+            const likesArray = Array.isArray(post.likes) ? post.likes : []; // Ensure likes is an array
+            const likeCount = likesArray.length; // Corrected: ensure likeCount is always defined
+            const authorData = usersCache[post.userId] || {};
+            const authorName = authorData.userName || "Usuário";
+            const authorPic = authorData.profilePicUrl || "https://placehold.co/40x40/cccccc/000000?text=P";
+            const isPosterVerified = authorData.isVerified || false;
+            const verificationBadgeHtml = `<img src="https://img.icons8.com/?size=512&id=2sZ0sdlG9kWP&format=png" alt="Verificado" class="verification-badge ${isPosterVerified ? 'show' : ''}">`;
+
+            const synopsisLimit = 150;
+            const truncatedSynopsis = post.synopsis.length > synopsisLimit ? post.synopsis.substring(0, synopsisLimit) + '...' : post.synopsis;
+            const showReadMore = post.synopsis.length > synopsisLimit;
+            
+            // Apply dynamic genre colors
+            let genreTagsHtml = post.genreIds?.map(id => {
+                const genreName = tmdbGenres[id];
+                const colorClass = getGenreColorClass(id);
+                return genreName ? `<span class="movie-post-tags span ${colorClass}">${genreName}</span>` : '';
+            }).join('') || '';
+
+            // Apply dynamic quality and audio language colors
+            const qualityClass = getQualityColorClass(post.quality);
+            const audioClass = getAudioColorClass(post.audioLanguage);
+            
+            postElement.innerHTML = `
+                <div class="flex items-center mb-2">
+                    <img src="${authorPic}" alt="Profile" class="w-8 h-8 rounded-full mr-3 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/40x40/cccccc/000000?text=P';">
+                    <p class="text-sm text-gray-800 font-semibold">${authorName}${verificationBadgeHtml}</p>
+                </div>
+                <div class="movie-post-card">
+                    <div class="movie-poster-container">
+                        <img src="${post.posterUrl || 'https://placehold.co/120x180/cccccc/000000?text=Error'}" alt="${post.title} Poster" class="movie-post-poster" onerror="this.onerror=null;this.src='https://placehold.co/120x180/cccccc/000000?text=Error';">
+                        ${post.driveLinks?.length > 0 ? `<button class="movie-post-link-btn" data-post-id="${post.id}" data-action="open-links">Acessar</button>` : ''}
+                    </div>
+                    <div class="movie-post-details">
+                        <h3 class="movie-post-title">${post.title}</h3>
+                        <p class="movie-post-synopsis">
+                            ${truncatedSynopsis}
+                            ${showReadMore ? `<span class="read-more-synopsis" data-full-synopsis="${post.synopsis}">Ver Mais</span>` : ''}
+                        </p>
+                        <div class="movie-post-tags">
+                            ${post.quality ? `<span class="movie-post-tags span ${qualityClass}">${post.quality}</span>` : ''}
+                            ${post.audioLanguage ? `<span class="movie-post-tags span ${audioClass}">${post.audioLanguage}</span>` : ''}
+                            ${genreTagsHtml}
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between border-t border-gray-200 pt-3 mt-3">
+                    <div class="flex items-center gap-4">
+                        <button class="btn-icon btn-like ${likedByCurrentUser ? 'liked' : ''}" data-post-id="${post.id}" data-action="like"><i class="${likedByCurrentUser ? 'fas' : 'far'} fa-heart"></i></button>
+                        <span class="text-gray-600">${likeCount}</span>
+                        <button class="btn-icon text-gray-600 hover:text-blue-500" data-post-id="${post.id}" data-action="open-discussion-modal" data-type="post"><i class="far fa-comment"></i></button>
+                        <span class="text-gray-600 comment-count-${post.id}">0</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn-icon btn-save ${savedByCurrentUser ? 'saved' : ''}" data-post-id="${post.id}" data-action="toggle-save"><i class="${savedByCurrentUser ? 'fas' : 'far'} fa-bookmark"></i></button>
+                        ${post.driveLinks?.length > 0 ? `
+                            <button class="btn-icon text-red-500 hover:text-red-700" data-post-id="${post.id}" data-action="download-link" title="Baixar">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        ` : ''}
+                        ${isOwner ? `<button class="btn-icon text-blue-500 hover:text-blue-700" data-post-id="${post.id}" data-action="edit-post"><i class="fas fa-edit"></i></button><button class="btn-icon text-red-500 hover:text-red-700" data-post-id="${post.id}" data-action="delete-post"><i class="fas fa-trash-alt"></i></button>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            if (createNewPostElement) postsContainer.appendChild(postElement);
+
+            postElement.querySelector(`[data-action="like"]`).addEventListener('click', (e) => toggleLike(e.currentTarget.dataset.postId, e.currentTarget));
+            postElement.querySelector(`[data-action="toggle-save"]`).addEventListener('click', (e) => toggleSave(e.currentTarget.dataset.postId));
+            if (isOwner) {
+                postElement.querySelector(`[data-action="edit-post"]`).addEventListener('click', () => openEditModal(post));
+                postElement.querySelector(`[data-action="delete-post"]`).addEventListener('click', (e) => openConfirmationModal('post', e.currentTarget.dataset.postId));
+            }
+            postElement.querySelector(`[data-action="open-discussion-modal"][data-type="post"]`).addEventListener('click', (e) => openDiscussionModal('post', e.currentTarget.dataset.postId));
+            const readMoreSpan = postElement.querySelector('.read-more-synopsis');
+            readMoreSpan?.addEventListener('click', () => { readMoreSpan.parentElement.textContent = readMoreSpan.dataset.fullSynopsis; });
+            postElement.querySelector('[data-action="open-links"]')?.addEventListener('click', () => openLinksModal(post.title, post.driveLinks));
+            // Event listener for the download button
+            postElement.querySelector('[data-action="download-link"]')?.addEventListener('click', (e) => {
+                const postId = e.currentTarget.dataset.postId;
+                const postData = allPostsCache[postId];
+                if (postData && postData.driveLinks && postData.driveLinks.length > 0) {
+                    downloadDriveLink(postData.driveLinks[0].url); // Download the first link
+                } else {
+                    showMessageBox("Nenhum link de download disponível para esta postagem.", "error");
+                }
+            });
+            listenForCommentCount(post.id);
+        }
+
+        function filterAndRenderPosts(searchTerm) {
+            const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+            const filteredPosts = normalizedSearchTerm === '' ? allPostsData : allPostsData.filter(post => {
+                return post.title.toLowerCase().includes(normalizedSearchTerm) || post.synopsis.toLowerCase().includes(normalizedSearchTerm);
+            });
+
+            postsContainer.innerHTML = '';
+            if (filteredPosts.length === 0) {
+                postsContainer.innerHTML = '<p class="text-center text-gray-500">Nenhum resultado encontrado.</p>';
+            } else {
+                filteredPosts.forEach(post => renderPost(post));
+            }
+        }
+
+        function listenForPosts() {
+            const postsQuery = query(collection(db, `artifacts/${appId}/public/data/posts`), orderBy('timestamp', 'desc'));
+            onSnapshot(postsQuery, (snapshot) => {
+                allPostsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allPostsCache = allPostsData.reduce((acc, post) => ({...acc, [post.id]: post}), {});
+                filterAndRenderPosts(searchInput.value);
+                listenForSavedPosts();
+            }, (error) => console.error("Error listening for posts:", error));
+        }
+        
+        searchInput.addEventListener('input', debounce(() => filterAndRenderPosts(searchInput.value), 300));
+
+        headerLogoContainer.addEventListener('click', () => {
+            window.scrollTo(0, 0);
+            searchInput.value = '';
+            filterAndRenderPosts('');
+            postsFeedSection.classList.remove('hidden');
+            requestsFeedSection.classList.add('hidden');
+            createPostFab.classList.remove('hidden');
+        });
+
+        // --- TMDB & Post Creation ---
+        async function fetchTmdbGenres() {
+            try {
+                const [movieResponse, tvResponse] = await Promise.all([
+                    fetch(`${TMDB_BASE_URL}/genre/movie/list?api_key=${TMDB_API_KEY}&language=pt-BR`),
+                    fetch(`${TMDB_BASE_URL}/genre/tv/list?api_key=${TMDB_API_KEY}&language=pt-BR`)
+                ]);
+                const movieData = await movieResponse.json();
+                const tvData = await tvResponse.json();
+                movieData.genres?.forEach(genre => { tmdbGenres[genre.id] = genre.name; });
+                tvData.genres?.forEach(genre => { tmdbGenres[genre.id] = genre.name; });
+            } catch (error) { console.error("Error fetching TMDB genres:", error); }
+        }
+
+        async function searchTmdb(query) {
+            if (!query) return [];
+            try {
+                const response = await fetch(`${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=pt-BR`);
+                const data = await response.json();
+                return data.results?.filter(item => item.media_type === 'movie' || item.media_type === 'tv')
+                                        .sort((a, b) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 10) || [];
+            } catch (error) {
+                console.error("Error searching TMDB:", error);
+                return [];
+            }
+        }
+
+        function renderTmdbSearchResults(results, targetContainer, targetTitleInput, targetPosterInput, targetSynopsisInput, type) {
+            targetContainer.innerHTML = '';
+            if (results.length === 0) {
+                targetContainer.innerHTML = '<p class="text-center text-gray-500 col-span-full">Nenhum resultado.</p>';
+                return;
+            }
+            results.forEach(item => {
+                const posterPath = item.poster_path ? `${TMDB_IMAGE_BASE_URL}${item.poster_path}` : 'https://placehold.co/100x150/cccccc/000000?text=Sem+Pôster';
+                const title = item.title || item.name;
+                const releaseDate = item.release_date || item.first_air_date; // Get release date
+                const resultItem = document.createElement('div');
+                resultItem.className = 'tmdb-result-item';
+                resultItem.innerHTML = `<img src="${posterPath}" alt="${title} Poster" onerror="this.onerror=null;this.src='https://placehold.co/100x150/cccccc/000000?text=Error';"><p title="${title}">${title}</p>`;
+                resultItem.addEventListener('click', () => {
+                    document.querySelectorAll('.tmdb-result-item').forEach(el => el.classList.remove('selected'));
+                    resultItem.classList.add('selected');
+                    
+                    if (type === 'post') {
+                        selectedTmdbItem = {
+                            tmdbId: item.id,
+                            contentType: item.media_type,
+                            title: title,
+                            posterUrl: posterPath,
+                            synopsis: item.overview || 'Sinopse não disponível.',
+                            genreIds: item.genre_ids || [],
+                            releaseDate: releaseDate || null
+                        };
+                        postTitleInput.value = selectedTmdbItem.title;
+                        postPosterUrlInput.value = selectedTmdbItem.posterUrl;
+                        postSynopsisInput.value = selectedTmdbItem.synopsis;
+                    } else if (type === 'request') {
+                        selectedRequestTmdbItem = {
+                            tmdbId: item.id,
+                            contentType: item.media_type,
+                            title: title,
+                            posterUrl: posterPath,
+                            synopsis: item.overview || 'Sinopse não disponível.',
+                            genreIds: item.genre_ids || [],
+                            releaseDate: releaseDate || null
+                        };
+                        requestTitleInput.value = selectedRequestTmdbItem.title;
+                        requestPosterUrlInput.value = selectedRequestTmdbItem.posterUrl;
+                        requestSynopsisInput.value = selectedRequestTmdbItem.synopsis;
+                    }
+                });
+                targetContainer.appendChild(resultItem);
+            });
+        }
+
+        const debouncedTmdbSearch = debounce(async (query, targetContainer, targetTitleInput, targetPosterInput, targetSynopsisInput, type) => {
+            const results = await searchTmdb(query);
+            renderTmdbSearchResults(results, targetContainer, targetTitleInput, targetPosterInput, targetSynopsisInput, type);
+        }, 500);
+
+        tmdbSearchInput.addEventListener('input', (e) => debouncedTmdbSearch(e.target.value.trim(), tmdbSearchResults, postTitleInput, postPosterUrlInput, postSynopsisInput, 'post'));
+        requestTmdbSearchInput.addEventListener('input', (e) => debouncedTmdbSearch(e.target.value.trim(), requestTmdbSearchResults, requestTitleInput, requestPosterUrlInput, requestSynopsisInput, 'request'));
+        
+        function addDriveLinkInput(containerId, url = '', language = 'Dublado') {
+            const container = document.getElementById(containerId);
+            const linkDiv = document.createElement('div');
+            linkDiv.className = 'flex gap-2 mb-2';
+            linkDiv.innerHTML = `
+                <input type="url" class="flex-grow p-3 border border-gray-300 rounded-lg drive-link-url" placeholder="URL do Google Drive" required value="${url}">
+                <select class="p-3 border border-gray-300 rounded-lg drive-link-language">
+                    <option value="Dublado" ${language === 'Dublado' ? 'selected' : ''}>Dublado</option>
+                    <option value="Original" ${language === 'Original' ? 'selected' : ''}>Original</option>
+                    <option value="Legendado" ${language === 'Legendado' ? 'selected' : ''}>Legendado</option>
+                    <option value="Outro" ${language === 'Outro' ? 'selected' : ''}>Outro</option>
+                </select>
+                <button type="button" class="btn-danger p-3 rounded-lg remove-drive-link"><i class="fas fa-times"></i></button>`;
+            container.appendChild(linkDiv);
+            linkDiv.querySelector('.remove-drive-link').addEventListener('click', () => linkDiv.remove());
+        }
+        addDriveLinkBtn.addEventListener('click', () => addDriveLinkInput('driveLinksContainer'));
+        addEditDriveLinkBtn.addEventListener('click', () => addDriveLinkInput('editDriveLinksContainer'));
+
+        createPostFab.addEventListener('click', () => {
+            selectedTmdbItem = null;
+            tmdbSearchInput.value = '';
+            tmdbSearchResults.innerHTML = '<p class="text-center text-gray-500 col-span-full">Comece a digitar para buscar...</p>';
+            postTitleInput.value = '';
+            postPosterUrlInput.value = '';
+            postSynopsisInput.value = '';
+            postQualitySelect.value = '';
+            postAudioLanguageSelect.value = '';
+            driveLinksContainer.innerHTML = '';
+            addDriveLinkInput('driveLinksContainer');
+            openModal('createMovieSeriesModal');
+        });
+
+        publishMovieSeriesBtn.addEventListener('click', async () => {
+            const driveLinks = Array.from(driveLinksContainer.querySelectorAll('.flex.gap-2')).map(div => ({ url: div.querySelector('.drive-link-url').value.trim(), language: div.querySelector('.drive-link-language').value })).filter(link => link.url);
+            if (!postTitleInput.value.trim() || !postSynopsisInput.value.trim() || !postPosterUrlInput.value.trim() || !postQualitySelect.value || !postAudioLanguageSelect.value || driveLinks.length === 0) {
+                return showMessageBox("Por favor, preencha todos os campos obrigatórios.", "error");
+            }
+            if (!currentUserId) return showMessageBox("Você precisa estar autenticado.", "error");
+            try {
+                const releaseDate = selectedTmdbItem?.releaseDate || null;
+                const releaseYear = releaseDate ? new Date(releaseDate).getFullYear() : null;
+
+                await addDoc(collection(db, `artifacts/${appId}/public/data/posts`), {
+                    userId: currentUserId,
+                    userName: usersCache[currentUserId]?.userName || "Usuário",
+                    userProfilePic: usersCache[currentUserId]?.profilePicUrl || "https://placehold.co/40x40/cccccc/000000?text=P",
+                    type: 'movie_series',
+                    tmdbId: selectedTmdbItem?.tmdbId || null,
+                    contentType: selectedTmdbItem?.contentType || 'unknown',
+                    title: postTitleInput.value.trim(),
+                    posterUrl: postPosterUrlInput.value.trim(),
+                    synopsis: postSynopsisInput.value.trim(),
+                    quality: postQualitySelect.value,
+                    audioLanguage: postAudioLanguageSelect.value,
+                    genreIds: selectedTmdbItem?.genreIds || [],
+                    driveLinks,
+                    timestamp: serverTimestamp(),
+                    releaseDate: releaseDate, // Add releaseDate
+                    releaseYear: releaseYear, // Add releaseYear
+                    likes: []
+                });
+                window.closeModal('createMovieSeriesModal');
+                showMessageBox("Postagem criada com sucesso!");
+            } catch (error) {
+                console.error("Error creating post:", error);
+                showMessageBox("Erro ao criar postagem.", "error");
+            }
+        });
+
+        function openLinksModal(title, driveLinks) {
+            linksModalTitle.textContent = `Links para: ${title}`;
+            linksModalContent.innerHTML = '';
+            if (driveLinks?.length > 0) {
+                driveLinks.forEach(link => {
+                    const linkElement = document.createElement('a');
+                    linkElement.href = link.url;
+                    linkElement.target = "_blank";
+                    linkElement.className = 'btn-primary w-full text-center';
+                    linkElement.textContent = `${link.language} - Acessar`;
+                    linksModalContent.appendChild(linkElement);
+                });
+            } else {
+                linksModalContent.innerHTML = '<p class="text-center text-gray-500">Nenhum link disponível.</p>';
+            }
+            openModal('linksModal');
+        }
+
+        // --- Like & Discussion Logic (formerly Comments) ---
+        async function toggleLike(postId, likeButton) {
+            if (!currentUserId) return showMessageBox("Você precisa estar autenticado para curtir.", "error");
+            const postRef = doc(db, `artifacts/${appId}/public/data/posts`, postId);
+            try {
+                const postDoc = await getDoc(postRef);
+                if (!postDoc.exists()) return;
+                const hasLiked = postDoc.data().likes?.includes(currentUserId);
+                await updateDoc(postRef, { likes: hasLiked ? arrayRemove(currentUserId) : arrayUnion(currentUserId) });
+                if (!hasLiked) createLikeExplosion(likeButton);
+            } catch (error) {
+                console.error("Error toggling like:", error);
+            }
+        }
+
+        function createLikeExplosion(targetElement) {
+            const rect = targetElement.getBoundingClientRect();
+            const explosion = document.createElement('div');
+            explosion.className = 'like-effect';
+            explosion.style.left = `${rect.left + rect.width / 2}px`;
+            explosion.style.top = `${rect.top + rect.height / 2}px`;
+            document.body.appendChild(explosion);
+            explosion.addEventListener('animationend', () => explosion.remove());
+        }
+
+        async function openDiscussionModal(type, itemId) {
+            currentDiscussionType = type;
+            currentDiscussionItemId = itemId;
+            discussionModalInput.value = ''; // Clear input field
+            discussionModalContent.innerHTML = '<p class="text-center text-gray-500">Carregando...</p>';
+
+            if (type === 'post') {
+                discussionModalTitle.textContent = `Comentários`;
+                discussionModalInput.placeholder = "Adicionar um comentário...";
+                addDiscussionModalBtn.textContent = "Adicionar Comentário";
+                listenForDiscussionInModal('post', itemId);
+            } else if (type === 'request') {
+                discussionModalTitle.textContent = `Respostas ao Pedido`;
+                discussionModalInput.placeholder = "Adicionar um link ou mensagem...";
+                addDiscussionModalBtn.textContent = "Enviar Resposta";
+                listenForDiscussionInModal('request', itemId);
+            }
+            openModal('commentsModal'); // Use the same modal for both
+        }
+
+        addDiscussionModalBtn.addEventListener('click', async () => {
+            const content = discussionModalInput.value.trim();
+            if (!content || !currentUserId || !currentDiscussionItemId) {
+                showMessageBox("Por favor, preencha o campo e esteja autenticado.", "error");
+                return;
+            }
+
+            try {
+                if (currentDiscussionType === 'post') {
+                    await addDoc(collection(db, `artifacts/${appId}/public/data/posts/${currentDiscussionItemId}/comments`), {
+                        userId: currentUserId,
+                        userName: usersCache[currentUserId]?.userName || "Usuário",
+                        userProfilePic: usersCache[currentUserId]?.profilePicUrl || "https://placehold.co/40x40/cccccc/000000?text=P",
+                        content: content,
+                        timestamp: serverTimestamp()
+                    });
+                    showMessageBox("Comentário adicionado com sucesso!");
+                } else if (currentDiscussionType === 'request') {
+                    // Removed Google Drive link validation - now accepts any URL
+                    await addDoc(collection(db, `artifacts/${appId}/public/data/requests/${currentDiscussionItemId}/responses`), {
+                        userId: currentUserId,
+                        userName: usersCache[currentUserId]?.userName || "Usuário",
+                        userProfilePic: usersCache[currentUserId]?.profilePicUrl || "https://placehold.co/40x40/cccccc/000000?text=P",
+                        linkUrl: content, // Store the link directly
+                        responseText: discussionModalInput.value.trim(), // Optional message
+                        timestamp: serverTimestamp()
+                    });
+                    showMessageBox("Resposta enviada com sucesso!");
+                }
+                discussionModalInput.value = '';
+            } catch (error) {
+                console.error(`Error adding ${currentDiscussionType} discussion item:`, error);
+                showMessageBox(`Erro ao adicionar ${currentDiscussionType === 'post' ? 'comentário' : 'resposta'}.`, "error");
+            }
+        });
+
+        function listenForDiscussionInModal(type, itemId) {
+            let collectionPath;
+            if (type === 'post') {
+                collectionPath = `artifacts/${appId}/public/data/posts/${itemId}/comments`;
+            } else if (type === 'request') {
+                collectionPath = `artifacts/${appId}/public/data/requests/${itemId}/responses`;
+            } else {
+                console.error("Invalid discussion type:", type);
+                return;
+            }
+
+            const discussionQuery = query(collection(db, collectionPath), orderBy('timestamp', 'asc'));
+            
+            // Unsubscribe from previous listener if any
+            if (discussionModalContent._unsubscribe) {
+                discussionModalContent._unsubscribe();
+            }
+
+            discussionModalContent._unsubscribe = onSnapshot(discussionQuery, (snapshot) => {
+                discussionModalContent.innerHTML = snapshot.empty ? `<p class="text-gray-500 text-sm">Nenhum ${type === 'post' ? 'comentário' : 'resposta'} ainda.</p>` : '';
+                snapshot.forEach((doc) => renderDiscussionItemInModal(discussionModalContent, type, itemId, { id: doc.id, ...doc.data() }));
+            }, (error) => console.error(`Error listening for ${type} discussion:`, error));
+        }
+        
+        function listenForCommentCount(postId) {
+            const commentsRef = collection(db, `artifacts/${appId}/public/data/posts/${postId}/comments`);
+            onSnapshot(commentsRef, (snapshot) => {
+                const span = document.querySelector(`.comment-count-${postId}`);
+                if (span) span.textContent = snapshot.size;
+            }, (error) => console.error(`Error listening for comment count:`, error));
+        }
+
+        function listenForResponseCount(requestId) {
+            const responsesRef = collection(db, `artifacts/${appId}/public/data/requests/${requestId}/responses`);
+            onSnapshot(responsesRef, (snapshot) => {
+                const span = document.querySelector(`.response-count-${requestId}`);
+                if (span) span.textContent = snapshot.size;
+            }, (error) => console.error(`Error listening for response count:`, error));
+        }
+
+        function renderDiscussionItemInModal(container, type, parentId, item) {
+            const itemElement = document.createElement('div');
+            itemElement.id = `${type}-${item.id}`;
+            itemElement.className = 'comment-card'; // Reusing comment-card style
+            const isOwner = currentUserId === item.userId;
+            const authorData = usersCache[item.userId] || {};
+            const authorName = authorData.userName || "Usuário";
+            const authorPic = authorData.profilePicUrl || "https://placehold.co/40x40/cccccc/000000?text=P";
+            const isAuthorVerified = authorData.isVerified || false;
+            const verificationBadgeHtml = `<img src="https://img.icons8.com/?size=512&id=2sZ0sdlG9kWP&format=png" alt="Verificado" class="verification-badge ${isAuthorVerified ? 'show' : ''}">`;
+            
+            let contentHtml = '';
+            let deleteAction = '';
+
+            if (type === 'post') {
+                contentHtml = `<p class="text-gray-700 text-sm mb-2 break-words">${item.content}</p>`;
+                deleteAction = `data-post-id="${parentId}" data-comment-id="${item.id}" data-action="delete-discussion-item" data-type="comment"`;
+            } else if (type === 'request') {
+                contentHtml = `
+                    <p class="text-gray-700 text-sm mb-2 break-words">${item.responseText || 'Link enviado!'}</p>
+                    <a href="${item.linkUrl}" target="_blank" class="btn-primary text-xs py-1 px-2 mt-2 inline-block">Acessar Link <i class="fas fa-external-link-alt ml-1"></i></a>
+                `;
+                deleteAction = `data-request-id="${parentId}" data-response-id="${item.id}" data-action="delete-discussion-item" data-type="response"`;
+            }
+
+            itemElement.innerHTML = `
+                <div class="flex items-center mb-1">
+                    <img src="${authorPic}" alt="Profile" class="w-6 h-6 rounded-full mr-2 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/40x40/cccccc/000000?text=P';">
+                    <p class="text-xs text-gray-700 font-semibold">${authorName}${verificationBadgeHtml}</p>
+                </div>
+                ${contentHtml}
+                ${isOwner ? `<div class="flex justify-end gap-2 mt-2"><button class="btn-icon text-red-500 hover:text-red-700 text-xs" ${deleteAction}><i class="fas fa-trash-alt"></i></button></div>` : ''}`;
+            
+            container.appendChild(itemElement);
+
+            if (isOwner) {
+                itemElement.querySelector(`[data-action="delete-discussion-item"]`).addEventListener('click', (e) => {
+                    window.closeModal('commentsModal'); // Close discussion modal before opening confirmation
+                    const deleteType = e.currentTarget.dataset.type;
+                    const deleteId = deleteType === 'comment' ? e.currentTarget.dataset.commentId : e.currentTarget.dataset.responseId;
+                    const deleteParentId = deleteType === 'comment' ? e.currentTarget.dataset.postId : e.currentTarget.dataset.requestId;
+                    openConfirmationModal(deleteType, deleteId, deleteParentId);
+                });
+            }
+        }
+
+        // --- Edit & Delete Logic ---
+        function openEditModal(post) {
+            editingItemType = 'post';
+            editingItemId = post.id;
+            editPostTitleInput.value = post.title || '';
+            editPostPosterUrlInput.value = post.posterUrl || '';
+            editPostSynopsisInput.value = post.synopsis || '';
+            editPostQualitySelect.value = post.quality || '';
+            editPostAudioLanguageSelect.value = post.audioLanguage || '';
+            editDriveLinksContainer.innerHTML = '';
+            post.driveLinks?.forEach(link => addDriveLinkInput('editDriveLinksContainer', link.url, link.language));
+            openModal('editModal');
+        }
+
+        saveEditBtn.addEventListener('click', async () => {
+            if (!currentUserId || editingItemType !== 'post') return;
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/posts`, editingItemId);
+                const driveLinks = Array.from(editDriveLinksContainer.querySelectorAll('.flex.gap-2')).map(div => ({ url: div.querySelector('.drive-link-url').value.trim(), language: div.querySelector('.drive-link-language').value })).filter(link => link.url);
+                await updateDoc(docRef, {
+                    title: editPostTitleInput.value.trim(),
+                    posterUrl: editPostPosterUrlInput.value.trim(),
+                    synopsis: editPostSynopsisInput.value.trim(),
+                    quality: editPostQualitySelect.value,
+                    audioLanguage: editPostAudioLanguageSelect.value,
+                    driveLinks,
+                });
+                showMessageBox('Postagem atualizada com sucesso!');
+                window.closeModal('editModal');
+            }
+            catch (error) {
+                console.error(`Error updating post:`, error);
+                showMessageBox(`Erro ao atualizar.`, "error");
+            }
+        });
+
+        function openConfirmationModal(type, id, parentId = null) {
+            editingItemType = type;
+            editingItemId = id;
+            editingPostId = null; // Reset
+            editingRequestId = null; // Reset
+
+            if (type === 'comment') {
+                editingPostId = parentId;
+            } else if (type === 'response') {
+                editingRequestId = parentId;
+            }
+            openModal('confirmationModal');
+        }
+
+        confirmDeleteBtn.addEventListener('click', async () => {
+            if (!currentUserId) return;
+            try {
+                let docRef;
+                if (editingItemType === 'post') {
+                    docRef = doc(db, `artifacts/${appId}/public/data/posts`, editingItemId);
+                } else if (editingItemType === 'comment' && editingPostId) {
+                    docRef = doc(db, `artifacts/${appId}/public/data/posts/${editingPostId}/comments`, editingItemId);
+                } else if (editingItemType === 'request') {
+                    docRef = doc(db, `artifacts/${appId}/public/data/requests`, editingItemId);
+                } else if (editingItemType === 'response' && editingRequestId) {
+                    docRef = doc(db, `artifacts/${appId}/public/data/requests/${editingRequestId}/responses`, editingItemId);
+                }
+                else { throw new Error("Invalid item type for deletion."); }
+                await deleteDoc(docRef);
+                showMessageBox('Item excluído com sucesso!');
+                window.closeModal('confirmationModal');
+            } catch (error) {
+                console.error(`Error deleting item:`, error);
+                showMessageBox(`Erro ao excluir.`, "error");
+            }
+        });
+
+        // --- Watch Later (Sidebar) Logic ---
+        window.toggleSidebar = function() {
+            watchLaterSidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('open');
+            if (watchLaterSidebar.classList.contains('open')) {
+                listenForSavedPosts();
+            }
+        };
+        toggleSidebarBtn.addEventListener('click', window.toggleSidebar);
+
+        function toggleSave(postId) {
+            if (!currentUserId) return showMessageBox("Você precisa estar autenticado.", "error");
+            const localStorageKey = `drivePlus_savedPosts_${currentUserId}`;
+            let savedPosts = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
+            const isCurrentlySaved = savedPosts.includes(postId);
+
+            if (isCurrentlySaved) {
+                savedPosts = savedPosts.filter(id => id !== postId);
+                showMessageBox("Removido de 'Assistir Mais Tarde'.", "success");
+            } else {
+                savedPosts.push(postId);
+                showMessageBox("Adicionado a 'Assistir Mais Tarde'!", "success");
+            }
+            localStorage.setItem(localStorageKey, JSON.stringify(savedPosts));
+            listenForSavedPosts();
+        }
+
+        function renderSavedPostInSidebar(post) {
+            if (!post || !post.id) return;
+            let savedPostElement = document.getElementById(`saved-post-${post.id}`);
+            if (savedPostElement) return; 
+
+            savedPostElement = document.createElement('div');
+            savedPostElement.id = `saved-post-${post.id}`;
+            savedPostElement.className = 'sidebar-post-item';
+            savedPostElement.innerHTML = `
+                <button class="sidebar-post-remove-btn" data-post-id="${post.id}" title="Remover">
+                    <i class="fas fa-times"></i>
+                </button>
+                <img src="${post.posterUrl || 'https://placehold.co/120x180/cccccc/000000?text=Pôster'}" alt="${post.title} Poster" class="sidebar-poster" onerror="this.onerror=null;this.src='https://placehold.co/120x180/cccccc/000000?text=Pôster';">
+                ${post.driveLinks?.length > 0 ? `<button class="btn-primary w-11/12 mx-auto mt-2 text-sm" data-post-id="${post.id}">Acessar</button>` : ''}
+            `;
+            savedPostsContainer.appendChild(savedPostElement);
+
+            savedPostElement.querySelector(".sidebar-post-remove-btn").addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleSave(post.id);
+            });
+            savedPostElement.querySelector(".btn-primary")?.addEventListener('click', () => {
+                const postToOpen = allPostsCache[post.id];
+                if (postToOpen) openLinksModal(postToOpen.title, postToOpen.driveLinks);
+            });
+        }
+
+        function listenForSavedPosts() {
+            if (!currentUserId) {
+                savedPostsContainer.innerHTML = '<p class="text-center text-gray-500 text-sm col-span-2">Faça login para salvar.</p>';
+                return;
+            }
+            const localStorageKey = `drivePlus_savedPosts_${currentUserId}`;
+            const savedPostIds = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
+            
+            savedPostsContainer.innerHTML = '';
+
+            if (savedPostIds.length === 0) {
+                savedPostsContainer.innerHTML = '<p class="text-center text-gray-500 text-sm col-span-2">Nenhuma postagem salva.</p>';
+            } else {
+                savedPostIds.forEach(postId => {
+                    const postData = allPostsCache[postId];
+                    if (postData) {
+                        renderSavedPostInSidebar(postData);
+                    } else {
+                        // If a saved post no longer exists in allPostsCache, remove it from localStorage
+                        const currentSaved = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
+                        localStorage.setItem(localStorageKey, JSON.stringify(currentSaved.filter(id => id !== postId)));
+                    }
+                });
+            }
+
+            document.querySelectorAll('.btn-save').forEach(btn => {
+                const postId = btn.dataset.postId;
+                const isSaved = savedPostIds.includes(postId);
+                btn.classList.toggle('saved', isSaved);
+                btn.querySelector('i').className = isSaved ? 'fas fa-bookmark' : 'far fa-bookmark';
+            });
+        }
+        
+        // --- Recent Posts (Fire Icon) Logic ---
+        toggleRecentPostsBtn.addEventListener('click', () => {
+            openModal('recentPostsModal');
+            listenForRecentPosts();
+        });
+
+        function listenForRecentPosts() {
+            const currentYear = new Date().getFullYear();
+            const postsRef = collection(db, `artifacts/${appId}/public/data/posts`);
+            // Query for all posts
+            const allPostsQuery = query(postsRef); // Removed where and orderBy from Firestore query
+
+            onSnapshot(allPostsQuery, (snapshot) => {
+                const allFetchedPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // Filter and sort posts in JavaScript
+                const recentPosts = allFetchedPosts.filter(post => {
+                    return post.releaseYear === currentYear;
+                }).sort((a, b) => {
+                    // Convert releaseDate to Date objects for comparison
+                    const dateA = a.releaseDate ? new Date(a.releaseDate) : new Date(0); // Use epoch for null dates
+                    const dateB = b.releaseDate ? new Date(b.releaseDate) : new Date(0);
+                    return dateB.getTime() - dateA.getTime(); // Sort descending
+                });
+
+                recentPostsContainer.innerHTML = ''; // Clear previous results
+                if (recentPosts.length === 0) {
+                    recentPostsContainer.innerHTML = '<p class="text-center text-gray-500 col-span-full">Nenhum lançamento recente encontrado para este ano.</p>';
+                    return;
+                }
+                recentPosts.forEach(post => {
+                    renderRecentPostCard(post);
+                });
+            }, (error) => {
+                console.error("Error listening for recent posts:", error);
+                recentPostsContainer.innerHTML = '<p class="text-center text-red-500 col-span-full">Erro ao carregar lançamentos recentes.</p>';
+            });
+        }
+
+        function renderRecentPostCard(post) {
+            const postElement = document.createElement('div');
+            postElement.className = 'recent-post-item highlight'; // Add highlight class
+            postElement.id = `recent-post-${post.id}`;
+
+            const posterUrl = post.posterUrl || 'https://placehold.co/120x180/cccccc/000000?text=Sem+Pôster';
+            const releaseDate = post.releaseDate ? new Date(post.releaseDate).toLocaleDateString('pt-BR') : 'Data Desconhecida';
+
+            postElement.innerHTML = `
+                <img src="${posterUrl}" alt="${post.title} Poster" onerror="this.onerror=null;this.src='https://placehold.co/120x180/cccccc/000000?text=Error';">
+                <h4>${post.title}</h4>
+                <p>Lançamento: ${releaseDate}</p>
+                ${post.driveLinks?.length > 0 ? `<button class="btn-primary w-11/12 mx-auto mt-2 text-sm" data-post-id="${post.id}" data-action="open-links-recent">Acessar</button>` : ''}
+            `;
+            recentPostsContainer.appendChild(postElement);
+
+            // Add event listener for the access button in the recent posts modal
+            postElement.querySelector('[data-action="open-links-recent"]')?.addEventListener('click', () => {
+                const postToOpen = allPostsCache[post.id];
+                if (postToOpen) openLinksModal(postToOpen.title, postToOpen.driveLinks);
+            });
+        }
+
+        // --- New Requests Feature Logic ---
+
+        toggleRequestsFeedBtn.addEventListener('click', () => {
+            postsFeedSection.classList.add('hidden');
+            requestsFeedSection.classList.remove('hidden');
+            createPostFab.classList.add('hidden'); // Hide FAB for posts
+            listenForRequests(); // Ensure requests are loaded when switching to this feed
+        });
+
+        createRequestBtn.addEventListener('click', () => {
+            selectedRequestTmdbItem = null;
+            requestTmdbSearchInput.value = '';
+            requestTmdbSearchResults.innerHTML = '<p class="text-center text-gray-500 col-span-full">Comece a digitar para buscar...</p>';
+            requestTitleInput.value = '';
+            requestPosterUrlInput.value = '';
+            requestSynopsisInput.value = '';
+            requestTextarea.value = '';
+            openModal('createRequestModal');
+        });
+
+        async function listenForRequests() {
+            const requestsQuery = query(collection(db, `artifacts/${appId}/public/data/requests`), orderBy('timestamp', 'desc'));
+            onSnapshot(requestsQuery, (snapshot) => {
+                allRequestsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allRequestsCache = allRequestsData.reduce((acc, request) => ({...acc, [request.id]: request}), {});
+                filterAndRenderRequests();
+            }, (error) => console.error("Error listening for requests:", error));
+        }
+
+        function filterAndRenderRequests() {
+            requestsContainer.innerHTML = ''; // Clear previous requests
+            if (allRequestsData.length === 0) {
+                requestsContainer.innerHTML = '<p class="text-center text-gray-500">Nenhum pedido encontrado.</p>';
+                return;
+            }
+            allRequestsData.forEach(request => renderRequest(request));
+        }
+
+        function renderRequest(request) {
+            let requestElement = document.getElementById(`request-${request.id}`);
+            const createNewRequestElement = !requestElement;
+            if (createNewRequestElement) {
+                requestElement = document.createElement('div');
+                requestElement.id = `request-${request.id}`;
+                requestElement.className = 'request-card';
+            }
+
+            const isOwner = currentUserId === request.userId;
+            const authorData = usersCache[request.userId] || {};
+            const authorName = authorData.userName || "Usuário";
+            const authorPic = authorData.profilePicUrl || "https://placehold.co/40x40/cccccc/000000?text=P";
+            const isRequesterVerified = authorData.isVerified || false;
+            const verificationBadgeHtml = `<img src="https://img.icons8.com/?size=512&id=2sZ0sdlG9kWP&format=png" alt="Verificado" class="verification-badge ${isRequesterVerified ? 'show' : ''}">`;
+
+            const synopsisLimit = 150;
+            const truncatedSynopsis = request.synopsis.length > synopsisLimit ? request.synopsis.substring(0, synopsisLimit) + '...' : request.synopsis;
+            const showReadMore = request.synopsis.length > synopsisLimit;
+
+            const statusClass = request.status === 'seeking' ? 'seeking' : 'found';
+            const statusText = request.status === 'seeking' ? 'Ainda Buscando' : 'Encontrado!';
+
+            requestElement.innerHTML = `
+                <div class="flex items-center mb-2">
+                    <img src="${authorPic}" alt="Profile" class="w-8 h-8 rounded-full mr-3 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/40x40/cccccc/000000?text=P';">
+                    <p class="text-sm text-gray-800 font-semibold">${authorName}${verificationBadgeHtml}</p>
+                    ${isOwner ? `<button class="btn-icon text-gray-600 hover:text-gray-800 ml-auto" data-request-id="${request.id}" data-action="toggle-request-status" title="Mudar Status"><i class="fas fa-sync-alt"></i></button>` : ''}
+                </div>
+                <div class="movie-post-card">
+                    <div class="movie-poster-container">
+                        <img src="${request.posterUrl || 'https://placehold.co/120x180/cccccc/000000?text=Error'}" alt="${request.title} Poster" class="movie-post-poster" onerror="this.onerror=null;this.src='https://placehold.co/120x180/cccccc/000000?text=Error';">
+                    </div>
+                    <div class="movie-post-details">
+                        <h3 class="movie-post-title">${request.title}</h3>
+                        <p class="movie-post-synopsis">
+                            ${truncatedSynopsis}
+                            ${showReadMore ? `<span class="read-more-synopsis" data-full-synopsis="${request.synopsis}">Ver Mais</span>` : ''}
+                        </p>
+                        ${request.requestText ? `<p class="text-gray-800 text-base font-semibold mt-2">"${request.requestText}"</p>` : ''}
+                    </div>
+                </div>
+                <div class="flex items-center justify-between border-t border-gray-200 pt-3 mt-3">
+                    <div class="flex items-center gap-4">
+                        <button class="btn-icon text-gray-600 hover:text-blue-500" data-request-id="${request.id}" data-action="open-discussion-modal" data-type="request"><i class="far fa-comment"></i></button>
+                        <span class="text-gray-600 response-count-${request.id}">0</span>
+                    </div>
+                    <div class="flex gap-2 items-center"> <!-- Added items-center for vertical alignment -->
+                        <span class="status-badge ${statusClass}">${statusText}</span> <!-- Moved status badge here -->
+                        ${isOwner ? `<button class="btn-icon text-red-500 hover:text-red-700" data-request-id="${request.id}" data-action="delete-request"><i class="fas fa-trash-alt"></i></button>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            if (createNewRequestElement) requestsContainer.appendChild(requestElement);
+
+            if (isOwner) {
+                requestElement.querySelector(`[data-action="toggle-request-status"]`).addEventListener('click', () => toggleRequestStatus(request.id, request.status));
+                requestElement.querySelector(`[data-action="delete-request"]`).addEventListener('click', (e) => openConfirmationModal('request', e.currentTarget.dataset.requestId));
+            }
+            requestElement.querySelector(`[data-action="open-discussion-modal"][data-type="request"]`).addEventListener('click', (e) => openDiscussionModal('request', e.currentTarget.dataset.requestId));
+            
+            const readMoreSpan = requestElement.querySelector('.read-more-synopsis');
+            readMoreSpan?.addEventListener('click', () => { readMoreSpan.parentElement.textContent = readMoreSpan.dataset.fullSynopsis; });
+
+            listenForResponseCount(request.id); // Listen for responses count for this request
+        }
+
+        async function toggleRequestStatus(requestId, currentStatus) {
+            if (!currentUserId) return showMessageBox("Você precisa estar autenticado.", "error");
+            const requestRef = doc(db, `artifacts/${appId}/public/data/requests`, requestId);
+            const newStatus = currentStatus === 'seeking' ? 'found' : 'seeking';
+            try {
+                await updateDoc(requestRef, { status: newStatus });
+                showMessageBox(`Status do pedido atualizado para "${newStatus === 'seeking' ? 'Ainda Buscando' : 'Encontrado!'}"`);
+            } catch (error) {
+                console.error("Error toggling request status:", error);
+                showMessageBox("Erro ao atualizar status do pedido.", "error");
+            }
+        }
+
+        submitRequestBtn.addEventListener('click', async () => {
+            if (!selectedRequestTmdbItem || !requestTitleInput.value.trim() || !requestSynopsisInput.value.trim() || !requestPosterUrlInput.value.trim()) {
+                return showMessageBox("Por favor, selecione um filme/série e preencha os campos obrigatórios.", "error");
+            }
+            if (!currentUserId) return showMessageBox("Você precisa estar autenticado.", "error");
+
+            try {
+                const releaseDate = selectedRequestTmdbItem?.releaseDate || null;
+                const releaseYear = releaseDate ? new Date(releaseDate).getFullYear() : null;
+
+                await addDoc(collection(db, `artifacts/${appId}/public/data/requests`), {
+                    userId: currentUserId,
+                    userName: usersCache[currentUserId]?.userName || "Usuário",
+                    userProfilePic: usersCache[currentUserId]?.profilePicUrl || "https://placehold.co/40x40/cccccc/000000?text=P",
+                    tmdbId: selectedRequestTmdbItem.tmdbId,
+                    contentType: selectedRequestTmdbItem.contentType,
+                    title: requestTitleInput.value.trim(),
+                    posterUrl: requestPosterUrlInput.value.trim(),
+                    synopsis: requestSynopsisInput.value.trim(),
+                    genreIds: selectedRequestTmdbItem.genreIds,
+                    requestText: requestTextarea.value.trim(),
+                    status: 'seeking', // Default status
+                    timestamp: serverTimestamp(),
+                    releaseDate: releaseDate,
+                    releaseYear: releaseYear
+                });
+                showMessageBox("Pedido de filme/série criado com sucesso!");
+                window.closeModal('createRequestModal'); // Close the modal after submission
+            } catch (error) {
+                console.error("Error creating request:", error);
+                showMessageBox("Erro ao criar pedido.", "error");
+            }
+        });
+
+        // General event listeners
+        window.addEventListener('click', (event) => {
+            const modals = ['createMovieSeriesModal', 'editModal', 'confirmationModal', 'profileModal', 'linksModal', 'commentsModal', 'verificationModal', 'recentPostsModal', 'createRequestModal'];
+            modals.forEach(modalId => {
+                const modalElement = document.getElementById(modalId);
+                if (modalElement && event.target === modalElement) {
+                    window.closeModal(modalId);
+                    // Specific cleanup for discussion modal if it was open
+                    if (modalId === 'commentsModal' && discussionModalContent._unsubscribe) {
+                        discussionModalContent._unsubscribe();
+                        discussionModalContent._unsubscribe = null;
+                        // Reset discussion modal specific elements
+                        discussionModalInput.placeholder = "Adicionar um comentário...";
+                        addDiscussionModalBtn.textContent = "Adicionar Comentário";
+                    }
+                }
+            });
+            if (watchLaterSidebar.classList.contains('open') && !watchLaterSidebar.contains(event.target) && !toggleSidebarBtn.contains(event.target)) {
+                window.toggleSidebar();
+            }
+        });
+    </script>
+</body>
+</html>
