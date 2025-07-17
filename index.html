@@ -345,8 +345,15 @@
         }
 
         /* Comments/Responses Modal Width */
-        #commentsModal .modal-content {
+        #commentsModal .modal-content,
+        #updateHistoryModal .modal-content { /* Apply to new modal too */
             max-width: 600px; /* Wider for comments/responses */
+        }
+
+        /* New Series Modals */
+        #createSeriesModal .modal-content,
+        #accessSeriesModal .modal-content {
+            max-width: 700px; /* Even wider for series details */
         }
 
 
@@ -423,6 +430,43 @@
         .fab:hover {
             background-color: #4338ca;
             transform: scale(1.08);
+        }
+
+        /* FAB Menu */
+        #fabMenu {
+            position: fixed;
+            bottom: 85px; /* Adjust based on FAB size + margin */
+            right: 20px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 901;
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+        }
+
+        #fabMenu.open {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #fabMenu button {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: left;
+            transition: background-color 0.2s;
+        }
+        #fabMenu button:hover {
+            background-color: #f0f2f5;
         }
 
         /* Profile Modal Picture (within profile section - increased size) */
@@ -642,6 +686,7 @@
         input[type="text"],
         input[type="number"],
         input[type="url"],
+        input[type="file"], /* Added for file input */
         textarea,
         select {
             width: 100%;
@@ -656,6 +701,7 @@
         input[type="text"]:focus,
         input[type="number"]:focus,
         input[type="url"]:focus,
+        input[type="file"]:focus, /* Added for file input */
         textarea:focus,
         select:focus {
             outline: none;
@@ -927,6 +973,82 @@
             animation: highlight-post 1.5s ease-in-out;
             border: 2px solid #4f46e5; /* Add a border for persistent highlight */
         }
+
+        /* Update History Modal Specific Styles */
+        .update-item {
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .update-item h4 {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        .update-item p {
+            font-size: 0.85rem;
+            color: #4b5563;
+        }
+        .update-item .date {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 5px;
+            display: block;
+        }
+        .update-item.correction h4 {
+            color: #22c55e; /* Green for corrections */
+        }
+        .update-item.bugfix h4 {
+            color: #ef4444; /* Red for bug fixes */
+        }
+        .update-item.feature h4 {
+            color: #4f46e5; /* Blue for new features */
+        }
+
+        /* Series Specific Styles (Access Modal) */
+        .season-section {
+            background-color: #f3f4f6;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e5e7eb;
+        }
+        .season-section h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .episode-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+        .episode-button {
+            background-color: #4f46e5;
+            color: white;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            transition: background-color 0.2s, transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 50px;
+        }
+        .episode-button:hover {
+            background-color: #4338ca;
+            transform: translateY(-1px);
+        }
+        .episode-button span {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -953,6 +1075,10 @@
             <!-- Bookmark Icon - Colored -->
             <button id="toggleSidebarBtn" class="btn-icon text-blue-600 hover:text-blue-800">
                 <i class="fas fa-bookmark text-xl"></i>
+            </button>
+            <!-- New Update History Icon -->
+            <button id="openUpdateHistoryBtn" class="btn-icon text-gray-600 hover:text-gray-800">
+                <i class="fas fa-history text-xl"></i>
             </button>
             <div id="profileIcon" class="profile-icon">
                 <img id="headerProfilePic" src="https://placehold.co/50x50/cccccc/000000?text=P" alt="Profile Picture" onerror="this.onerror=null;this.src='https://placehold.co/50x50/cccccc/000000?text=P';">
@@ -1012,18 +1138,24 @@
                 </div>
             </div>
 
-            <!-- Section for Profile Image Change -->
+            <!-- Section for Profile Image Change (ImgBB only) -->
             <div class="mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-                <h3 class="text-lg font-semibold text-gray-700 mb-3">Alterar Imagem de Perfil</h3>
+                <h3 class="text-lg font-semibold text-gray-700 mb-3">Upload de Imagem</h3>
                 <div class="mb-2">
-                    <label for="profileImageUrlInput" class="block text-gray-700 text-sm font-bold mb-2">URL da Imagem</label>
-                    <input type="url" id="profileImageUrlInput" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Cole a URL da imagem aqui...">
+                    <label for="profileImageUploadInput" class="block text-gray-700 text-sm font-bold mb-2">Selecione uma imagem para upload</label>
+                    <input type="file" id="profileImageUploadInput" accept="image/*" class="w-full p-3 border border-gray-300 rounded-lg">
+                    <button id="uploadImageBtn" class="btn-secondary w-full mt-2">
+                        Upload e Usar Imagem
+                    </button>
                 </div>
-                <button id="saveImageBtn" class="btn-primary w-full">Salvar Imagem</button>
             </div>
 
             <footer class="mt-8 text-center text-gray-500 text-sm">
-                Versão 1.0.0 (2025) criado por Leonardo
+                <p>Versão 1.0.0 (2025) criado por Leonardo</p>
+                <p class="mt-2 text-xs text-gray-400">AVISO LEGAL: Nós não armazenamos nenhum dos arquivos em nenhum servidor. Todos os conteúdos são fornecidos por terceiros sem qualquer tipo de filiação.</p>
+                <button id="contactDevBtn" class="btn-primary mt-4 py-2 px-4 text-sm">
+                    <i class="fab fa-whatsapp mr-2"></i> Notificar Erros ou Sugerir Ideias
+                </button>
             </footer>
         </div>
     </div>
@@ -1031,6 +1163,16 @@
     <!-- Floating Action Button for Posts -->
     <div id="createPostFab" class="fab">
         <i class="fas fa-plus"></i>
+    </div>
+
+    <!-- FAB Menu (New) -->
+    <div id="fabMenu" class="hidden">
+        <button id="fabMovieBtn" class="btn-secondary">
+            <i class="fas fa-film mr-2"></i> Publicar Filme
+        </button>
+        <button id="fabSeriesBtn" class="btn-secondary">
+            <i class="fas fa-tv mr-2"></i> Publicar Série
+        </button>
     </div>
 
     <!-- Watch Later Sidebar -->
@@ -1047,15 +1189,15 @@
     <!-- Sidebar Overlay -->
     <div id="sidebarOverlay" onclick="window.toggleSidebar()"></div>
 
-    <!-- Create Movie/Series Post Modal -->
-    <div id="createMovieSeriesModal" class="modal">
+    <!-- Create Movie Post Modal -->
+    <div id="createMovieModal" class="modal"> <!-- Renamed from createMovieSeriesModal -->
         <div class="modal-content">
-            <span class="close-button" onclick="window.closeModal('createMovieSeriesModal')">&times;</span>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Publicar Filme ou Série</h2>
+            <span class="close-button" onclick="window.closeModal('createMovieModal')">&times;</span> <!-- Updated close button -->
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Publicar Filme</h2>
 
             <div class="mb-4">
-                <label for="tmdbSearchInput" class="block text-gray-700 text-sm font-bold mb-2">Buscar Filme/Série (TMDB)</label>
-                <input type="text" id="tmdbSearchInput" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Digite o nome do filme ou série...">
+                <label for="tmdbSearchInput" class="block text-gray-700 text-sm font-bold mb-2">Buscar Filme (TMDB)</label>
+                <input type="text" id="tmdbSearchInput" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Digite o nome do filme...">
                 <div id="tmdbSearchResults" class="tmdb-results-grid">
                     <p class="text-center text-gray-500 col-span-full">Comece a digitar para buscar...</p>
                 </div>
@@ -1063,7 +1205,7 @@
 
             <div class="mb-4">
                 <label for="postTitle" class="block text-gray-700 text-sm font-bold mb-2">Título</label>
-                <input type="text" id="postTitle" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Título do Filme/Série" readonly>
+                <input type="text" id="postTitle" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Título do Filme" readonly>
             </div>
 
             <div class="mb-4">
@@ -1073,7 +1215,7 @@
 
             <div class="mb-4">
                 <label for="postSynopsis" class="block text-gray-700 text-sm font-bold mb-2">Sinopse</label>
-                <textarea id="postSynopsis" class="w-full p-3 border border-gray-300 rounded-lg" rows="5" placeholder="Sinopse do Filme/Série" readonly></textarea>
+                <textarea id="postSynopsis" class="w-full p-3 border border-gray-300 rounded-lg" rows="5" placeholder="Sinopse do Filme" readonly></textarea>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -1117,7 +1259,48 @@
                 <button type="button" id="addDriveLinkBtn" class="btn-secondary w-full mt-2"><i class="fas fa-plus mr-2"></i> Adicionar Mais Link</button>
             </div>
 
-            <button id="publishMovieSeriesBtn" class="btn-primary w-full">Publicar</button>
+            <button id="publishMovieBtn" class="btn-primary w-full">Publicar Filme</button>
+        </div>
+    </div>
+
+    <!-- Create Series Post Modal (New) -->
+    <div id="createSeriesModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.closeModal('createSeriesModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Publicar Série</h2>
+
+            <div class="mb-4">
+                <label for="tmdbSearchSeriesInput" class="block text-gray-700 text-sm font-bold mb-2">Buscar Série (TMDB)</label>
+                <input type="text" id="tmdbSearchSeriesInput" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Digite o nome da série...">
+                <div id="tmdbSearchResultsSeries" class="tmdb-results-grid">
+                    <p class="text-center text-gray-500 col-span-full">Comece a digitar para buscar...</p>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="seriesTitle" class="block text-gray-700 text-sm font-bold mb-2">Título</label>
+                <input type="text" id="seriesTitle" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Título da Série" readonly>
+            </div>
+
+            <div class="mb-4">
+                <label for="seriesPosterUrl" class="block text-gray-700 text-sm font-bold mb-2">URL do Pôster (Opcional)</label>
+                <input type="text" id="seriesPosterUrl" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="URL do pôster" readonly>
+            </div>
+
+            <div class="mb-4">
+                <label for="seriesSynopsis" class="block text-gray-700 text-sm font-bold mb-2">Sinopse</label>
+                <textarea id="seriesSynopsis" class="w-full p-3 border border-gray-300 rounded-lg" rows="5" placeholder="Sinopse da Série" readonly></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Temporadas e Episódios</label>
+                <div id="seasonsContainer" class="flex flex-col gap-4 p-3 border border-gray-300 rounded-lg bg-gray-50">
+                    <!-- Seasons will be added here dynamically -->
+                </div>
+                <button type="button" id="addSeasonBtn" class="btn-secondary w-full mt-2"><i class="fas fa-plus mr-2"></i> Adicionar Temporada</button>
+            </div>
+
+            <button id="publishSeriesBtn" class="btn-primary w-full">Publicar Série</button>
         </div>
     </div>
 
@@ -1142,7 +1325,8 @@
                 <textarea id="editPostSynopsis" class="w-full p-3 border border-gray-300 rounded-lg" rows="5" placeholder="Sinopse do Filme/Série"></textarea>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <!-- Conditional fields for movie/series in edit modal -->
+            <div id="editMovieFields" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="editPostQuality" class="block text-gray-700 text-sm font-bold mb-2">Qualidade</label>
                     <select id="editPostQuality" class="w-full p-3 border border-gray-300 rounded-lg">
@@ -1166,7 +1350,15 @@
                 </div>
             </div>
 
-            <div class="mb-4">
+            <div id="editSeriesFields" class="mb-4 hidden">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Temporadas e Episódios</label>
+                <div id="editSeasonsContainer" class="flex flex-col gap-4 p-3 border border-gray-300 rounded-lg bg-gray-50">
+                    <!-- Existing seasons will be loaded here -->
+                </div>
+                <button type="button" id="addEditSeasonBtn" class="btn-secondary w-full mt-2"><i class="fas fa-plus mr-2"></i> Adicionar Temporada</button>
+            </div>
+
+            <div class="mb-4" id="editMovieDriveLinksContainerWrapper">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Links do Google Drive</label>
                 <div id="editDriveLinksContainer"></div>
                 <button type="button" id="addEditDriveLinkBtn" class="btn-secondary w-full mt-2"><i class="fas fa-plus mr-2"></i> Adicionar Mais Link</button>
@@ -1242,12 +1434,23 @@
     <!-- Message Box -->
     <div id="messageBox" class="message-box"></div>
 
-    <!-- Links Modal -->
+    <!-- Links Modal (for movies) -->
     <div id="linksModal" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="window.closeModal('linksModal')">&times;</span>
             <h2 class="text-2xl font-bold text-gray-800 mb-4" id="linksModalTitle">Links de Acesso</h2>
             <div id="linksModalContent" class="flex flex-col gap-3"></div>
+        </div>
+    </div>
+
+    <!-- Access Series Modal (New) -->
+    <div id="accessSeriesModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.closeModal('accessSeriesModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4" id="accessSeriesModalTitle">Acessar Série</h2>
+            <div id="accessSeriesContent" class="flex flex-col gap-4 max-h-96 overflow-y-auto">
+                <!-- Seasons and episodes will be rendered here -->
+            </div>
         </div>
     </div>
 
@@ -1300,6 +1503,17 @@
         </div>
     </div>
 
+    <!-- Update History Modal -->
+    <div id="updateHistoryModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.closeModal('updateHistoryModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Histórico de Atualizações</h2>
+            <div id="updateHistoryContent" class="flex flex-col gap-3">
+                <!-- Content will be dynamically loaded from hardcoded data -->
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -1331,6 +1545,7 @@
         let allRequestsData = []; // Array of all requests
         let isUserVerified = false; // Local state for verification
         let activeView = 'posts'; // Track the currently active view: 'posts', 'requests', 'recent', or 'profile'
+        let savedPostIdsFromFirebase = []; // To store IDs of saved posts from Firebase
 
         // TMDB API
         const TMDB_API_KEY = "d0f7e2c414b1efff7b000ae9b681ed1b";
@@ -1338,6 +1553,10 @@
         const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
         let tmdbGenres = {};
 
+        // ImgBB API
+        const IMGBB_API_KEY = "9a792281a6220ed358215ad0c1e4162e"; // User provided API key
+        const IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload";
+        
         // DOM Elements
         const postsFeedSection = document.getElementById('postsFeedSection');
         const requestsFeedSection = document.getElementById('requestsFeedSection');
@@ -1345,18 +1564,34 @@
         const postsContainer = document.getElementById('postsContainer');
         const requestsContainer = document.getElementById('requestsContainer'); // This will hold the rendered requests
         const createPostFab = document.getElementById('createPostFab');
+        const fabMenu = document.getElementById('fabMenu'); // New FAB menu
+        const fabMovieBtn = document.getElementById('fabMovieBtn'); // New FAB movie button
+        const fabSeriesBtn = document.getElementById('fabSeriesBtn'); // New FAB series button
+
         const messageBox = document.getElementById('messageBox');
-        const createMovieSeriesModal = document.getElementById('createMovieSeriesModal');
-        const tmdbSearchInput = document.getElementById('tmdbSearchInput');
-        const tmdbSearchResults = document.getElementById('tmdbSearchResults');
-        const postTitleInput = document.getElementById('postTitle');
-        const postPosterUrlInput = document.getElementById('postPosterUrl');
-        const postSynopsisInput = document.getElementById('postSynopsis');
-        const postQualitySelect = document.getElementById('postQuality');
-        const postAudioLanguageSelect = document.getElementById('postAudioLanguage');
-        const driveLinksContainer = document.getElementById('driveLinksContainer');
-        const addDriveLinkBtn = document.getElementById('addDriveLinkBtn');
-        const publishMovieSeriesBtn = document.getElementById('publishMovieSeriesBtn');
+        const createMovieModal = document.getElementById('createMovieModal'); // Now specifically for movies
+        const createSeriesModal = document.getElementById('createSeriesModal'); // New modal for series
+
+        const tmdbSearchInput = document.getElementById('tmdbSearchInput'); // For movies
+        const tmdbSearchResults = document.getElementById('tmdbSearchResults'); // For movies
+        const postTitleInput = document.getElementById('postTitle'); // For movies
+        const postPosterUrlInput = document.getElementById('postPosterUrl'); // For movies
+        const postSynopsisInput = document.getElementById('postSynopsis'); // For movies
+        const postQualitySelect = document.getElementById('postQuality'); // For movies
+        const postAudioLanguageSelect = document.getElementById('postAudioLanguage'); // For movies
+        const driveLinksContainer = document.getElementById('driveLinksContainer'); // For movies
+        const addDriveLinkBtn = document.getElementById('addDriveLinkBtn'); // For movies
+        const publishMovieBtn = document.getElementById('publishMovieBtn'); // For movies
+
+        const tmdbSearchSeriesInput = document.getElementById('tmdbSearchSeriesInput'); // For series
+        const tmdbSearchResultsSeries = document.getElementById('tmdbSearchResultsSeries'); // For series
+        const seriesTitle = document.getElementById('seriesTitle'); // For series
+        const seriesPosterUrl = document.getElementById('seriesPosterUrl'); // For series
+        const seriesSynopsis = document.getElementById('seriesSynopsis'); // For series
+        const seasonsContainer = document.getElementById('seasonsContainer'); // For series
+        const addSeasonBtn = document.getElementById('addSeasonBtn'); // For series
+        const publishSeriesBtn = document.getElementById('publishSeriesBtn'); // For series
+
         const editModal = document.getElementById('editModal');
         const editPostTitleInput = document.getElementById('editPostTitle');
         const editPostPosterUrlInput = document.getElementById('editPostPosterUrl');
@@ -1366,6 +1601,12 @@
         const editDriveLinksContainer = document.getElementById('editDriveLinksContainer');
         const addEditDriveLinkBtn = document.getElementById('addEditDriveLinkBtn');
         const saveEditBtn = document.getElementById('saveEditBtn');
+        const editMovieFields = document.getElementById('editMovieFields'); // Conditional display
+        const editSeriesFields = document.getElementById('editSeriesFields'); // Conditional display
+        const editSeasonsContainer = document.getElementById('editSeasonsContainer'); // For series edit
+        const addEditSeasonBtn = document.getElementById('addEditSeasonBtn'); // For series edit
+        const editMovieDriveLinksContainerWrapper = document.getElementById('editMovieDriveLinksContainerWrapper'); // Wrapper for movie links in edit
+
         const confirmationModal = document.getElementById('confirmationModal');
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         const profileIcon = document.getElementById('profileIcon');
@@ -1375,9 +1616,9 @@
         const profileNameInput = document.getElementById('profileNameInput');
         const profileUserIdDisplay = document.getElementById('profileUserIdDisplay');
         const saveNameBtn = document.getElementById('saveNameBtn'); // New: Save Name button
-        const saveImageBtn = document.getElementById('saveImageBtn'); // New: Save Image button
-        const profileImageUrlInput = document.getElementById('profileImageUrlInput');
-
+        const profileImageUploadInput = document.getElementById('profileImageUploadInput'); // File input for ImgBB
+        const uploadImageBtn = document.getElementById('uploadImageBtn'); // Button to trigger ImgBB upload
+        
         // Renamed elements for generic discussion modal
         const discussionModal = document.getElementById('commentsModal'); // Reusing commentsModal
         const discussionModalTitle = document.getElementById('discussionModalTitle');
@@ -1416,14 +1657,32 @@
         const requestTextarea = document.getElementById('requestText');
         const submitRequestBtn = document.getElementById('submitRequestBtn');
 
+        // New Update History Elements
+        const openUpdateHistoryBtn = document.getElementById('openUpdateHistoryBtn');
+        const updateHistoryModal = document.getElementById('updateHistoryModal');
+        const updateHistoryContent = document.getElementById('updateHistoryContent');
+
+        // New Contact Developer Button
+        const contactDevBtn = document.getElementById('contactDevBtn');
+
+        // New Series Access Modal Elements
+        const accessSeriesModal = document.getElementById('accessSeriesModal');
+        const accessSeriesModalTitle = document.getElementById('accessSeriesModalTitle');
+        const accessSeriesContent = document.getElementById('accessSeriesContent');
+
+
         let editingItemId = null;
         let editingItemType = null;
         let editingPostId = null; // Used for comments deletion
         let editingRequestId = null; // Used for responses deletion
-        let selectedTmdbItem = null; // For posts
+        let selectedTmdbItem = null; // For movies
+        let selectedTmdbSeriesItem = null; // For series
         let selectedRequestTmdbItem = null; // For requests
+
         let currentDiscussionType = null; // 'post' or 'request'
         let currentDiscussionItemId = null; // ID of the post or request
+
+        let seasonCounter = 0; // To keep track of season numbers for new series
 
         // --- Utility Functions ---
         function showMessageBox(message, type = 'success') {
@@ -1434,7 +1693,11 @@
         }
 
         function openModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }
-        window.closeModal = function(modalId) { document.getElementById(modalId).style.display = 'none'; };
+        window.closeModal = function(modalId) { 
+            document.getElementById(modalId).style.display = 'none';
+            // Close FAB menu if any modal is closed
+            fabMenu.classList.remove('open');
+        };
 
         function debounce(func, delay) {
             let timeout;
@@ -1490,7 +1753,7 @@
                 await fetchOrCreateUserProfile(currentUserId);
                 await fetchTmdbGenres();
                 listenForPosts();
-                listenForSavedPosts();
+                listenForSavedPosts(); // Ensure this is called after allPostsData is populated
                 listenForRequests(); // Start listening for requests
 
                 // Check for postId in URL on initial load
@@ -1555,7 +1818,6 @@
                 profileNameInput.value = userData.userName || "Usuário Novo";
                 headerProfilePic.src = userData.profilePicUrl || "https://placehold.co/50x50/cccccc/000000?text=P";
                 profilePicDisplay.src = userData.profilePicUrl || "https://placehold.co/80x80/cccccc/000000?text=P";
-                profileImageUrlInput.value = userData.profilePicUrl || ''; // Populate with current URL
                 updateVerificationStatusUI();
             } catch (error) {
                 console.error("Error fetching/creating user profile:", error);
@@ -1581,30 +1843,52 @@
             }
         });
 
-        // New event listener for saving profile image
-        saveImageBtn.addEventListener('click', async () => {
-            if (!currentUserId) return;
-            
-            const newProfilePic = profileImageUrlInput.value.trim(); // Directly use the URL input
-            if (!newProfilePic) {
-                showMessageBox("Por favor, insira uma URL para a imagem de perfil.", "error");
+        // Event listener for ImgBB upload button (simplified)
+        uploadImageBtn.addEventListener('click', async () => {
+            const file = profileImageUploadInput.files[0];
+            if (!file) {
+                showMessageBox("Por favor, selecione uma imagem para upload.", "error");
                 return;
             }
 
-            try {
-                const userRef = doc(db, `artifacts/${appId}/public/data/users`, currentUserId);
-                await updateDoc(userRef, { profilePicUrl: newProfilePic });
-                
-                if(usersCache[currentUserId]) {
-                   usersCache[currentUserId].profilePicUrl = newProfilePic;
-                }
-                headerProfilePic.src = newProfilePic;
-                profilePicDisplay.src = newProfilePic;
+            showMessageBox("Fazendo upload da imagem...", "success");
+            uploadImageBtn.disabled = true; // Disable button during upload
 
-                showMessageBox("Imagem de perfil atualizada com sucesso!");
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
+                formData.append('key', IMGBB_API_KEY);
+
+                const response = await fetch(IMGBB_UPLOAD_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const uploadedImageUrl = result.data.url;
+                    if (!currentUserId) return showMessageBox("Usuário não autenticado.", "error");
+
+                    const userRef = doc(db, `artifacts/${appId}/public/data/users`, currentUserId);
+                    await updateDoc(userRef, { profilePicUrl: uploadedImageUrl });
+                    
+                    if(usersCache[currentUserId]) {
+                       usersCache[currentUserId].profilePicUrl = uploadedImageUrl;
+                    }
+                    headerProfilePic.src = uploadedImageUrl;
+                    profilePicDisplay.src = uploadedImageUrl;
+                    showMessageBox("Imagem de perfil atualizada com sucesso!");
+                } else {
+                    showMessageBox(`Erro ao carregar imagem: ${result.error.message}`, "error");
+                    console.error("ImgBB upload error:", result.error);
+                }
             } catch (error) {
-                console.error("Error saving profile image:", error);
-                showMessageBox("Erro ao salvar imagem de perfil.", "error");
+                console.error("Error uploading image to ImgBB:", error);
+                showMessageBox("Erro ao fazer upload da imagem.", "error");
+            } finally {
+                uploadImageBtn.disabled = false; // Re-enable upload button
+                profileImageUploadInput.value = ''; // Clear file input
             }
         });
 
@@ -1613,7 +1897,6 @@
             const userData = usersCache[currentUserId] || {};
             profileNameInput.value = userData.userName || "Usuário Novo";
             profilePicDisplay.src = userData.profilePicUrl || "https://placehold.co/80x80/cccccc/000000?text=P";
-            profileImageUrlInput.value = userData.profilePicUrl || ''; // Populate with current URL
             updateVerificationStatusUI();
             
             // Hide all feeds and show profile section
@@ -1622,6 +1905,7 @@
             recentPostsSection.classList.add('hidden'); // Hide recent posts section
             profileSection.classList.remove('hidden');
             createPostFab.classList.add('hidden'); // Hide FAB when in profile
+            fabMenu.classList.remove('open'); // Close FAB menu if open
             activeView = 'profile'; // Set active view
         });
 
@@ -1647,6 +1931,7 @@
             }
             activeView = feedType;
             window.scrollTo(0, 0); // Scroll to top when changing views
+            fabMenu.classList.remove('open'); // Close FAB menu when changing views
         }
 
         headerLogoContainer.addEventListener('click', () => showFeed('posts'));
@@ -1693,34 +1978,34 @@
             // Additional for variety: Orange, Dark Blue, Purple
             
             // Action, Adventure, Animation, Comedy, Crime
-            28: 'tag-color-red',      // Ação (Red)
-            12: 'tag-color-blue',     // Aventura (Blue)
-            16: 'tag-color-green',    // Animação (Green)
-            35: 'tag-color-yellow',   // Comédia (Yellow)
-            80: 'tag-color-darkblue', // Crime (Dark Blue)
+            28: 'tag-color-red',       // Ação (Red)
+            12: 'tag-color-blue',      // Aventura (Blue)
+            16: 'tag-color-green',     // Animação (Green)
+            35: 'tag-color-yellow',    // Comédia (Yellow)
+            80: 'tag-color-darkblue',  // Crime (Dark Blue)
             
             // Documentary, Drama, Family, Fantasy, History
-            99: 'tag-color-blue',     // Documentário (Blue - as per image example)
-            18: 'tag-color-green',    // Drama (Green - as per image example)
-            10751: 'tag-color-yellow',// Família (Yellow)
-            14: 'tag-color-purple',   // Fantasia (Purple)
-            36: 'tag-color-orange',   // História (Orange)
+            99: 'tag-color-blue',      // Documentário (Blue - as per image example)
+            18: 'tag-color-green',     // Drama (Green - as per image example)
+            10751: 'tag-color-yellow', // Família (Yellow)
+            14: 'tag-color-purple',    // Fantasia (Purple)
+            36: 'tag-color-orange',    // História (Orange)
             
             // Horror, Music, Mystery, Romance, Science Fiction
-            27: 'tag-color-red',      // Terror (Red)
-            10402: 'tag-color-green', // Música (Green)
+            27: 'tag-color-red',       // Terror (Red)
+            10402: 'tag-color-green',  // Música (Green)
             9648: 'tag-color-darkblue',// Mistério (Dark Blue)
-            10749: 'tag-color-yellow',// Romance (Yellow)
-            878: 'tag-color-blue',    // Ficção Científica (Blue)
+            10749: 'tag-color-yellow', // Romance (Yellow)
+            878: 'tag-color-blue',     // Ficção Científica (Blue)
             
             // TV Movie, Thriller, War, Western, Reality, Talk, News
-            10770: 'tag-color-orange',// Filme de TV (Orange)
-            53: 'tag-color-red',      // Thriller (Red)
-            10752: 'tag-color-green', // Guerra (Green)
-            37: 'tag-color-blue',     // Faroeste (Blue)
-            10764: 'tag-color-yellow',// Reality (Yellow)
+            10770: 'tag-color-orange', // Filme de TV (Orange)
+            53: 'tag-color-red',       // Thriller (Red)
+            10752: 'tag-color-green',  // Guerra (Green)
+            37: 'tag-color-blue',      // Faroeste (Blue)
+            10764: 'tag-color-yellow', // Reality (Yellow)
             10767: 'tag-color-darkblue',// Talk (Dark Blue)
-            10763: 'tag-color-orange' // Notícias (Orange)
+            10763: 'tag-color-orange'  // Notícias (Orange)
         };
 
         const qualityColorMap = {
@@ -1763,8 +2048,8 @@
 
             const isOwner = currentUserId === post.userId;
             const likedByCurrentUser = post.likes?.includes(currentUserId);
-            const savedPosts = JSON.parse(localStorage.getItem(`drivePlus_savedPosts_${currentUserId}`) || '[]');
-            const savedByCurrentUser = savedPosts.includes(post.id);
+            // Check if the post is saved by the current user using the Firebase-fetched list
+            const savedByCurrentUser = savedPostIdsFromFirebase.includes(post.id);
             const likesArray = Array.isArray(post.likes) ? post.likes : []; // Ensure likes is an array
             const likeCount = likesArray.length; // Corrected: ensure likeCount is always defined
             const authorData = usersCache[post.userId] || {};
@@ -1784,9 +2069,20 @@
                 return genreName ? `<span class="movie-post-tags span ${colorClass}">${genreName}</span>` : '';
             }).join('') || '';
 
-            // Apply dynamic quality and audio language colors
-            const qualityClass = getQualityColorClass(post.quality);
-            const audioClass = getAudioColorClass(post.audioLanguage);
+            // Determine access button based on content type
+            let accessButtonHtml = '';
+            let accessButtonAction = '';
+            if (post.contentType === 'movie') {
+                accessButtonHtml = post.driveLinks?.length > 0 ? `<button class="movie-post-link-btn" data-post-id="${post.id}" data-action="open-links">Acessar</button>` : '';
+                accessButtonAction = 'open-links';
+            } else if (post.contentType === 'series') {
+                accessButtonHtml = post.seasons?.length > 0 ? `<button class="movie-post-link-btn" data-post-id="${post.id}" data-action="open-series-access">Acessar Série</button>` : '';
+                accessButtonAction = 'open-series-access';
+            }
+
+            // Apply dynamic quality and audio language colors for movies only
+            const qualityClass = post.quality ? getQualityColorClass(post.quality) : '';
+            const audioClass = post.audioLanguage ? getAudioColorClass(post.audioLanguage) : '';
             
             postElement.innerHTML = `
                 <div class="flex items-center mb-2">
@@ -1796,7 +2092,7 @@
                 <div class="movie-post-card">
                     <div class="movie-poster-container">
                         <img src="${post.posterUrl || 'https://placehold.co/120x180/cccccc/000000?text=Error'}" alt="${post.title} Poster" class="movie-post-poster" onerror="this.onerror=null;this.src='https://placehold.co/120x180/cccccc/000000?text=Error';">
-                        ${post.driveLinks?.length > 0 ? `<button class="movie-post-link-btn" data-post-id="${post.id}" data-action="open-links">Acessar</button>` : ''}
+                        ${accessButtonHtml}
                     </div>
                     <div class="movie-post-details">
                         <h3 class="movie-post-title">${post.title}</h3>
@@ -1821,7 +2117,7 @@
                     <div class="flex gap-2">
                         <button class="btn-icon text-gray-600 hover:text-gray-800" data-post-id="${post.id}" data-action="share-post" title="Compartilhar"><i class="fas fa-link"></i></button>
                         <button class="btn-icon btn-save ${savedByCurrentUser ? 'saved' : ''}" data-post-id="${post.id}" data-action="toggle-save"><i class="${savedByCurrentUser ? 'fas' : 'far'} fa-bookmark"></i></button>
-                        ${post.driveLinks?.length > 0 ? `
+                        ${post.driveLinks?.length > 0 && post.contentType === 'movie' ? `
                             <button class="btn-icon text-red-500 hover:text-red-700" data-post-id="${post.id}" data-action="download-link" title="Baixar">
                                 <i class="fas fa-download"></i>
                             </button>
@@ -1843,17 +2139,23 @@
             postElement.querySelector(`[data-action="open-discussion-modal"][data-type="post"]`).addEventListener('click', (e) => openDiscussionModal('post', e.currentTarget.dataset.postId));
             const readMoreSpan = postElement.querySelector('.read-more-synopsis');
             readMoreSpan?.addEventListener('click', () => { readMoreSpan.parentElement.textContent = readMoreSpan.dataset.fullSynopsis; });
-            postElement.querySelector('[data-action="open-links"]')?.addEventListener('click', () => openLinksModal(post.title, post.driveLinks));
-            // Event listener for the download button
-            postElement.querySelector('[data-action="download-link"]')?.addEventListener('click', (e) => {
-                const postId = e.currentTarget.dataset.postId;
-                const postData = allPostsCache[postId];
-                if (postData && postData.driveLinks && postData.driveLinks.length > 0) {
-                    downloadDriveLink(postData.driveLinks[0].url); // Download the first link
-                } else {
-                    showMessageBox("Nenhum link de download disponível para esta postagem.", "error");
-                }
-            });
+            
+            // Add specific access button listeners
+            if (post.contentType === 'movie') {
+                postElement.querySelector('[data-action="open-links"]')?.addEventListener('click', () => openLinksModal(post.title, post.driveLinks));
+                postElement.querySelector('[data-action="download-link"]')?.addEventListener('click', (e) => {
+                    const postId = e.currentTarget.dataset.postId;
+                    const postData = allPostsCache[postId];
+                    if (postData && postData.driveLinks && postData.driveLinks.length > 0) {
+                        downloadDriveLink(postData.driveLinks[0].url); // Download the first link
+                    } else {
+                        showMessageBox("Nenhum link de download disponível para esta postagem.", "error");
+                    }
+                });
+            } else if (post.contentType === 'series') {
+                postElement.querySelector('[data-action="open-series-access"]')?.addEventListener('click', () => openSeriesAccessModal(post));
+            }
+            
             listenForCommentCount(post.id);
         }
 
@@ -1877,7 +2179,7 @@
                 allPostsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 allPostsCache = allPostsData.reduce((acc, post) => ({...acc, [post.id]: post}), {});
                 filterAndRenderPosts(searchInput.value);
-                listenForSavedPosts();
+                listenForSavedPosts(); // Call listenForSavedPosts here to ensure allPostsCache is ready
             }, (error) => console.error("Error listening for posts:", error));
         }
         
@@ -1897,15 +2199,34 @@
             } catch (error) { console.error("Error fetching TMDB genres:", error); }
         }
 
-        async function searchTmdb(query) {
+        async function searchTmdb(query, mediaType = 'multi') { // Added mediaType parameter
             if (!query) return [];
             try {
-                const response = await fetch(`${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=pt-BR`);
+                let apiUrl = '';
+                if (mediaType === 'movie') {
+                    apiUrl = `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=pt-BR`;
+                } else if (mediaType === 'tv') {
+                    apiUrl = `${TMDB_BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=pt-BR`;
+                } else { // Default to 'multi' or if explicitly passed
+                    apiUrl = `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=pt-BR`;
+                }
+
+                const response = await fetch(apiUrl);
                 const data = await response.json();
-                return data.results?.filter(item => item.media_type === 'movie' || item.media_type === 'tv')
-                                         .sort((a, b) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 10) || [];
+
+                // The subsequent filter on data.results is only really necessary for 'multi'
+                // because the /search/movie and /search/tv endpoints already return the correct type.
+                // But keeping it for 'multi' is good.
+                let filteredResults = data.results;
+                if (mediaType === 'multi') {
+                    filteredResults = data.results?.filter(item => item.media_type === 'movie' || item.media_type === 'tv');
+                }
+                // For 'movie' and 'tv' passed directly, data.results should already be of the correct type.
+
+                return filteredResults?.sort((a, b) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 10) || [];
+
             } catch (error) {
-                console.error("Error searching TMDB:", error);
+                console.error("Erro ao buscar no TMDB:", error);
                 return [];
             }
         }
@@ -1927,10 +2248,10 @@
                     document.querySelectorAll('.tmdb-result-item').forEach(el => el.classList.remove('selected'));
                     resultItem.classList.add('selected');
                     
-                    if (type === 'post') {
+                    if (type === 'movie') { 
                         selectedTmdbItem = {
                             tmdbId: item.id,
-                            contentType: item.media_type,
+                            contentType: item.media_type, 
                             title: title,
                             posterUrl: posterPath,
                             synopsis: item.overview || 'Sinopse não disponível.',
@@ -1940,10 +2261,23 @@
                         postTitleInput.value = selectedTmdbItem.title;
                         postPosterUrlInput.value = selectedTmdbItem.posterUrl;
                         postSynopsisInput.value = selectedTmdbItem.synopsis;
-                    } else if (type === 'request') {
+                    } else if (type === 'series') { 
+                        selectedTmdbSeriesItem = {
+                            tmdbId: item.id,
+                            contentType: item.media_type, 
+                            title: title,
+                            posterUrl: posterPath,
+                            synopsis: item.overview || 'Sinopse não disponível.',
+                            genreIds: item.genre_ids || [],
+                            releaseDate: releaseDate || null
+                        };
+                        seriesTitle.value = selectedTmdbSeriesItem.title;
+                        seriesPosterUrl.value = selectedTmdbSeriesItem.posterUrl;
+                        seriesSynopsis.value = selectedTmdbSeriesItem.synopsis;
+                    } else if (type === 'request') { 
                         selectedRequestTmdbItem = {
                             tmdbId: item.id,
-                            contentType: item.media_type,
+                            contentType: item.media_type, 
                             title: title,
                             posterUrl: posterPath,
                             synopsis: item.overview || 'Sinopse não disponível.',
@@ -1959,14 +2293,26 @@
             });
         }
 
-        const debouncedTmdbSearch = debounce(async (query, targetContainer, targetTitleInput, targetPosterInput, targetSynopsisInput, type) => {
-            const results = await searchTmdb(query);
-            renderTmdbSearchResults(results, targetContainer, targetTitleInput, targetPosterInput, targetSynopsisInput, type);
+        const debouncedTmdbSearchMovie = debounce(async (query) => {
+            const results = await searchTmdb(query, 'movie'); // Search only movies
+            renderTmdbSearchResults(results, tmdbSearchResults, postTitleInput, postPosterUrlInput, postSynopsisInput, 'movie');
         }, 500);
 
-        tmdbSearchInput.addEventListener('input', (e) => debouncedTmdbSearch(e.target.value.trim(), tmdbSearchResults, postTitleInput, postPosterUrlInput, postSynopsisInput, 'post'));
-        requestTmdbSearchInput.addEventListener('input', (e) => debouncedTmdbSearch(e.target.value.trim(), requestTmdbSearchResults, requestTitleInput, requestPosterUrlInput, requestSynopsisInput, 'request'));
+        const debouncedTmdbSearchSeries = debounce(async (query) => {
+            const results = await searchTmdb(query, 'tv'); // Search only TV series
+            renderTmdbSearchResults(results, tmdbSearchResultsSeries, seriesTitle, seriesPosterUrl, seriesSynopsis, 'series');
+        }, 500);
+
+        const debouncedTmdbSearchRequest = debounce(async (query) => {
+            const results = await searchTmdb(query, 'multi'); // Search both for requests
+            renderTmdbSearchResults(results, requestTmdbSearchResults, requestTitleInput, requestPosterUrlInput, requestSynopsisInput, 'request');
+        }, 500);
+
+        tmdbSearchInput.addEventListener('input', (e) => debouncedTmdbSearchMovie(e.target.value.trim()));
+        tmdbSearchSeriesInput.addEventListener('input', (e) => debouncedTmdbSearchSeries(e.target.value.trim()));
+        requestTmdbSearchInput.addEventListener('input', (e) => debouncedTmdbSearchRequest(e.target.value.trim()));
         
+        // Movie Link Input
         function addDriveLinkInput(containerId, url = '', language = 'Dublado') {
             const container = document.getElementById(containerId);
             const linkDiv = document.createElement('div');
@@ -1986,7 +2332,142 @@
         addDriveLinkBtn.addEventListener('click', () => addDriveLinkInput('driveLinksContainer'));
         addEditDriveLinkBtn.addEventListener('click', () => addDriveLinkInput('editDriveLinksContainer'));
 
-        createPostFab.addEventListener('click', () => {
+        // Series Season/Episode Link Input
+        function addSeasonInput(container, seasonNumber = null, episodesData = [], isSingleLink = false, singleLinkUrl = '', singleLinkLanguage = 'Dublado') {
+            if (seasonNumber === null) {
+                seasonCounter++;
+                seasonNumber = seasonCounter;
+            }
+
+            const seasonDiv = document.createElement('div');
+            seasonDiv.className = 'season-block p-3 border border-gray-200 rounded-lg bg-white mb-3';
+            seasonDiv.innerHTML = `
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-semibold text-gray-800">Temporada ${seasonNumber}</h4>
+                    <button type="button" class="btn-danger p-2 rounded-full remove-season-btn"><i class="fas fa-trash-alt text-sm"></i></button>
+                </div>
+                <div class="mb-3">
+                    <label for="seasonName-${seasonNumber}" class="block text-gray-700 text-sm font-bold mb-2">Nome da Temporada</label>
+                    <input type="text" id="seasonName-${seasonNumber}" class="w-full p-3 border border-gray-300 rounded-lg season-name-input" placeholder="Ex: Temporada 1" value="Temporada ${seasonNumber}">
+                </div>
+                <div class="mb-3 flex items-center">
+                    <input type="checkbox" id="singleLink-${seasonNumber}" class="mr-2 single-link-checkbox" ${isSingleLink ? 'checked' : ''}>
+                    <label for="singleLink-${seasonNumber}" class="text-gray-700 text-sm font-bold">Temporada/Episódios em um link só</label>
+                </div>
+                <div class="single-link-container ${isSingleLink ? '' : 'hidden'} mb-3">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Link Único da Temporada</label>
+                    <div class="flex gap-2">
+                        <input type="url" class="flex-grow p-3 border border-gray-300 rounded-lg single-season-link-url" placeholder="URL do Google Drive" value="${singleLinkUrl}">
+                        <select class="p-3 border border-gray-300 rounded-lg single-season-link-language">
+                            <option value="Dublado" ${singleLinkLanguage === 'Dublado' ? 'selected' : ''}>Dublado</option>
+                            <option value="Original" ${singleLinkLanguage === 'Original' ? 'selected' : ''}>Original</option>
+                            <option value="Legendado" ${singleLinkLanguage === 'Legendado' ? 'selected' : ''}>Legendado</option>
+                            <option value="Outro" ${singleLinkLanguage === 'Outro' ? 'selected' : ''}>Outro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="multiple-links-container ${isSingleLink ? 'hidden' : ''}">
+                    <div class="mb-3">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Número de Episódios</label>
+                        <div class="flex gap-2">
+                            <input type="number" class="flex-grow p-3 border border-gray-300 rounded-lg episode-count-input" min="1" value="${episodesData.length > 0 && !isSingleLink ? episodesData.length : ''}" placeholder="Ex: 10">
+                            <button type="button" class="btn-secondary p-3 rounded-lg generate-episodes-btn">Gerar Campos</button>
+                        </div>
+                    </div>
+                    <div class="episodes-container flex flex-col gap-2">
+                        <!-- Episode links will be generated here -->
+                    </div>
+                </div>
+            `;
+            container.appendChild(seasonDiv);
+
+            const seasonNameInput = seasonDiv.querySelector('.season-name-input');
+            const singleLinkCheckbox = seasonDiv.querySelector('.single-link-checkbox');
+            const singleLinkContainer = seasonDiv.querySelector('.single-link-container');
+            const multipleLinksContainer = seasonDiv.querySelector('.multiple-links-container');
+            const episodeCountInput = seasonDiv.querySelector('.episode-count-input');
+            const generateEpisodesBtn = seasonDiv.querySelector('.generate-episodes-btn');
+            const episodesContainer = seasonDiv.querySelector('.episodes-container');
+            const removeSeasonBtn = seasonDiv.querySelector('.remove-season-btn');
+
+            removeSeasonBtn.addEventListener('click', () => {
+                seasonDiv.remove();
+                // Re-number seasons if needed (optional, but good for consistency)
+                Array.from(container.children).forEach((div, index) => {
+                    div.querySelector('.season-name-input').value = `Temporada ${index + 1}`;
+                    div.querySelector('h4').textContent = `Temporada ${index + 1}`;
+                });
+                seasonCounter = container.children.length; // Update counter
+            });
+
+            const toggleLinkInputs = () => {
+                if (singleLinkCheckbox.checked) {
+                    singleLinkContainer.classList.remove('hidden');
+                    multipleLinksContainer.classList.add('hidden');
+                } else {
+                    singleLinkContainer.classList.add('hidden');
+                    multipleLinksContainer.classList.remove('hidden');
+                }
+            };
+
+            singleLinkCheckbox.addEventListener('change', toggleLinkInputs);
+
+            const generateEpisodeInputs = (count) => {
+                episodesContainer.innerHTML = ''; // Clear existing episodes
+                for (let i = 1; i <= count; i++) {
+                    addEpisodeInput(episodesContainer, i);
+                }
+            };
+
+            generateEpisodesBtn.addEventListener('click', () => {
+                const count = parseInt(episodeCountInput.value);
+                if (isNaN(count) || count <= 0) {
+                    showMessageBox("Por favor, insira um número válido de episódios.", "error");
+                    return;
+                }
+                generateEpisodeInputs(count);
+            });
+
+            // If existing episodes data is provided, render them
+            if (episodesData.length > 0 && !isSingleLink) {
+                episodesData.forEach((episode, index) => {
+                    addEpisodeInput(episodesContainer, index + 1, episode.url, episode.language);
+                });
+            }
+
+            // Initial toggle based on loaded data
+            toggleLinkInputs();
+        }
+
+        function addEpisodeInput(container, episodeNumber, url = '', language = 'Dublado') {
+            const episodeDiv = document.createElement('div');
+            episodeDiv.className = 'flex gap-2 mb-2 items-center';
+            episodeDiv.innerHTML = `
+                <span class="font-medium text-gray-700 w-20 flex-shrink-0">Episódio ${episodeNumber}</span>
+                <input type="url" class="flex-grow p-3 border border-gray-300 rounded-lg episode-link-url" placeholder="URL do Google Drive" required value="${url}">
+                <select class="p-3 border border-gray-300 rounded-lg episode-link-language">
+                    <option value="Dublado" ${language === 'Dublado' ? 'selected' : ''}>Dublado</option>
+                    <option value="Original" ${language === 'Original' ? 'selected' : ''}>Original</option>
+                    <option value="Legendado" ${language === 'Legendado' ? 'selected' : ''}>Legendado</option>
+                    <option value="Outro" ${language === 'Outro' ? 'selected' : ''}>Outro</option>
+                </select>
+                <button type="button" class="btn-danger p-3 rounded-lg remove-episode-link"><i class="fas fa-times"></i></button>
+            `;
+            container.appendChild(episodeDiv);
+            episodeDiv.querySelector('.remove-episode-link').addEventListener('click', () => episodeDiv.remove());
+        }
+
+        addSeasonBtn.addEventListener('click', () => addSeasonInput(seasonsContainer));
+        addEditSeasonBtn.addEventListener('click', () => addSeasonInput(editSeasonsContainer));
+
+
+        // FAB Menu Logic
+        createPostFab.addEventListener('click', (event) => {
+            fabMenu.classList.toggle('open');
+            event.stopPropagation(); // Prevent closing immediately if clicking outside
+        });
+
+        fabMovieBtn.addEventListener('click', () => {
             selectedTmdbItem = null;
             tmdbSearchInput.value = '';
             tmdbSearchResults.innerHTML = '<p class="text-center text-gray-500 col-span-full">Comece a digitar para buscar...</p>';
@@ -1997,13 +2478,29 @@
             postAudioLanguageSelect.value = '';
             driveLinksContainer.innerHTML = '';
             addDriveLinkInput('driveLinksContainer');
-            openModal('createMovieSeriesModal');
+            openModal('createMovieModal'); // Changed to createMovieModal
+            fabMenu.classList.remove('open');
         });
 
-        publishMovieSeriesBtn.addEventListener('click', async () => {
+        fabSeriesBtn.addEventListener('click', () => {
+            selectedTmdbSeriesItem = null;
+            tmdbSearchSeriesInput.value = '';
+            tmdbSearchResultsSeries.innerHTML = '<p class="text-center text-gray-500 col-span-full">Comece a digitar para buscar...</p>';
+            seriesTitle.value = '';
+            seriesPosterUrl.value = '';
+            seriesSynopsis.value = '';
+            seasonsContainer.innerHTML = ''; // Clear previous seasons
+            seasonCounter = 0; // Reset season counter
+            addSeasonInput(seasonsContainer); // Add first season by default
+            openModal('createSeriesModal');
+            fabMenu.classList.remove('open');
+        });
+
+        // Publish Movie
+        publishMovieBtn.addEventListener('click', async () => {
             const driveLinks = Array.from(driveLinksContainer.querySelectorAll('.flex.gap-2')).map(div => ({ url: div.querySelector('.drive-link-url').value.trim(), language: div.querySelector('.drive-link-language').value })).filter(link => link.url);
             if (!postTitleInput.value.trim() || !postSynopsisInput.value.trim() || !postPosterUrlInput.value.trim() || !postQualitySelect.value || !postAudioLanguageSelect.value || driveLinks.length === 0) {
-                return showMessageBox("Por favor, preencha todos os campos obrigatórios.", "error");
+                return showMessageBox("Por favor, preencha todos os campos obrigatórios para o filme.", "error");
             }
             if (!currentUserId) return showMessageBox("Você precisa estar autenticado.", "error");
             try {
@@ -2014,9 +2511,9 @@
                     userId: currentUserId,
                     userName: usersCache[currentUserId]?.userName || "Usuário",
                     userProfilePic: usersCache[currentUserId]?.profilePicUrl || "https://placehold.co/40x40/cccccc/000000?text=P",
-                    type: 'movie_series',
+                    type: 'movie', // Changed type to 'movie'
+                    contentType: 'movie', // New field to clearly distinguish
                     tmdbId: selectedTmdbItem?.tmdbId || null,
-                    contentType: selectedTmdbItem?.contentType || 'unknown',
                     title: postTitleInput.value.trim(),
                     posterUrl: postPosterUrlInput.value.trim(),
                     synopsis: postSynopsisInput.value.trim(),
@@ -2025,17 +2522,92 @@
                     genreIds: selectedTmdbItem?.genreIds || [],
                     driveLinks,
                     timestamp: serverTimestamp(),
-                    releaseDate: releaseDate, // Add releaseDate
-                    releaseYear: releaseYear, // Add releaseYear
+                    releaseDate: releaseDate,
+                    releaseYear: releaseYear,
                     likes: []
                 });
-                window.closeModal('createMovieSeriesModal');
-                showMessageBox("Postagem criada com sucesso!");
+                window.closeModal('createMovieModal'); // Changed to createMovieModal
+                showMessageBox("Filme publicado com sucesso!");
             } catch (error) {
-                console.error("Error creating post:", error);
-                showMessageBox("Erro ao criar postagem.", "error");
+                console.error("Error creating movie post:", error);
+                showMessageBox("Erro ao publicar filme.", "error");
             }
         });
+
+        // Publish Series
+        publishSeriesBtn.addEventListener('click', async () => {
+            if (!seriesTitle.value.trim() || !seriesSynopsis.value.trim() || !seriesPosterUrl.value.trim()) {
+                return showMessageBox("Por favor, preencha os campos de título, pôster e sinopse da série.", "error");
+            }
+            if (!currentUserId) return showMessageBox("Você precisa estar autenticado.", "error");
+
+            const seasons = [];
+            const seasonElements = seasonsContainer.querySelectorAll('.season-block');
+            let hasValidLinks = false;
+
+            seasonElements.forEach((seasonDiv) => {
+                const seasonName = seasonDiv.querySelector('.season-name-input').value.trim();
+                const isSingleLink = seasonDiv.querySelector('.single-link-checkbox').checked;
+                let seasonData = { seasonName: seasonName, isSingleLink: isSingleLink };
+
+                if (isSingleLink) {
+                    const singleLinkUrl = seasonDiv.querySelector('.single-season-link-url').value.trim();
+                    const singleLinkLanguage = seasonDiv.querySelector('.single-season-link-language').value;
+                    if (singleLinkUrl) {
+                        seasonData.singleLink = { url: singleLinkUrl, language: singleLinkLanguage };
+                        hasValidLinks = true;
+                    }
+                } else {
+                    const episodes = [];
+                    const episodeElements = seasonDiv.querySelectorAll('.episodes-container > div');
+                    episodeElements.forEach(episodeDiv => {
+                        const url = episodeDiv.querySelector('.episode-link-url').value.trim();
+                        const language = episodeDiv.querySelector('.episode-link-language').value;
+                        if (url) {
+                            episodes.push({ url, language });
+                            hasValidLinks = true;
+                        }
+                    });
+                    if (episodes.length > 0) {
+                        seasonData.episodes = episodes;
+                    }
+                }
+                seasons.push(seasonData);
+            });
+
+            if (!hasValidLinks) {
+                return showMessageBox("Por favor, adicione pelo menos um link (de episódio ou temporada inteira) para a série.", "error");
+            }
+
+            try {
+                const releaseDate = selectedTmdbSeriesItem?.releaseDate || null;
+                const releaseYear = releaseDate ? new Date(releaseDate).getFullYear() : null;
+
+                await addDoc(collection(db, `artifacts/${appId}/public/data/posts`), {
+                    userId: currentUserId,
+                    userName: usersCache[currentUserId]?.userName || "Usuário",
+                    userProfilePic: usersCache[currentUserId]?.profilePicUrl || "https://placehold.co/40x40/cccccc/000000?text=P",
+                    type: 'series', // Changed type to 'series'
+                    contentType: 'series', // New field to clearly distinguish
+                    tmdbId: selectedTmdbSeriesItem?.tmdbId || null,
+                    title: seriesTitle.value.trim(),
+                    posterUrl: seriesPosterUrl.value.trim(),
+                    synopsis: seriesSynopsis.value.trim(),
+                    genreIds: selectedTmdbSeriesItem?.genreIds || [],
+                    seasons: seasons, // Store seasons data
+                    timestamp: serverTimestamp(),
+                    releaseDate: releaseDate,
+                    releaseYear: releaseYear,
+                    likes: []
+                });
+                window.closeModal('createSeriesModal');
+                showMessageBox("Série publicada com sucesso!");
+            } catch (error) {
+                console.error("Error creating series post:", error);
+                showMessageBox("Erro ao publicar série.", "error");
+            }
+        });
+
 
         function openLinksModal(title, driveLinks) {
             linksModalTitle.textContent = `Links para: ${title}`;
@@ -2054,6 +2626,57 @@
             }
             openModal('linksModal');
         }
+
+        // New function to open the series access modal
+        function openSeriesAccessModal(seriesPost) {
+            accessSeriesModalTitle.textContent = `Acessar Série: ${seriesPost.title}`;
+            accessSeriesContent.innerHTML = ''; // Clear previous content
+
+            if (!seriesPost.seasons || seriesPost.seasons.length === 0) {
+                accessSeriesContent.innerHTML = '<p class="text-center text-gray-500">Nenhuma temporada ou episódio disponível.</p>';
+                openModal('accessSeriesModal');
+                return;
+            }
+
+            seriesPost.seasons.forEach(season => {
+                const seasonSection = document.createElement('div');
+                seasonSection.className = 'season-section';
+                seasonSection.innerHTML = `
+                    <h3>${season.seasonName || `Temporada ${season.seasonNumber}`}</h3>
+                    <div class="episode-grid">
+                        <!-- Episodes or single link will go here -->
+                    </div>
+                `;
+                const episodeGrid = seasonSection.querySelector('.episode-grid');
+
+                if (season.isSingleLink && season.singleLink?.url) {
+                    const episodeButton = document.createElement('button');
+                    episodeButton.className = 'episode-button col-span-full'; // Full width for single link
+                    episodeButton.innerHTML = `Acessar Temporada Completa <br><span>(${season.singleLink.language})</span>`;
+                    episodeButton.addEventListener('click', () => {
+                        window.open(season.singleLink.url, '_blank');
+                        showMessageBox(`Acessando Temporada Completa (${season.singleLink.language})`, "success");
+                    });
+                    episodeGrid.appendChild(episodeButton);
+                } else if (season.episodes && season.episodes.length > 0) {
+                    season.episodes.forEach((episode, index) => {
+                        const episodeButton = document.createElement('button');
+                        episodeButton.className = 'episode-button';
+                        episodeButton.innerHTML = `Episódio ${index + 1} <br><span>(${episode.language})</span>`;
+                        episodeButton.addEventListener('click', () => {
+                            window.open(episode.url, '_blank');
+                            showMessageBox(`Acessando Episódio ${index + 1} (${episode.language})`, "success");
+                        });
+                        episodeGrid.appendChild(episodeButton);
+                    });
+                } else {
+                    episodeGrid.innerHTML = '<p class="text-center text-gray-500 col-span-full">Nenhum episódio nesta temporada.</p>';
+                }
+                accessSeriesContent.appendChild(seasonSection);
+            });
+            openModal('accessSeriesModal');
+        }
+
 
         // --- Like & Discussion Logic (formerly Comments) ---
         async function toggleLike(postId, likeButton) {
@@ -2152,6 +2775,7 @@
             // Unsubscribe from previous listener if any
             if (discussionModalContent._unsubscribe) {
                 discussionModalContent._unsubscribe();
+                discussionModalContent._unsubscribe = null; // Clear the reference
             }
 
             discussionModalContent._unsubscribe = onSnapshot(discussionQuery, (snapshot) => {
@@ -2224,31 +2848,96 @@
 
         // --- Edit & Delete Logic ---
         function openEditModal(post) {
-            editingItemType = 'post';
+            editingItemType = post.contentType; // Store content type for editing
             editingItemId = post.id;
             editPostTitleInput.value = post.title || '';
             editPostPosterUrlInput.value = post.posterUrl || '';
             editPostSynopsisInput.value = post.synopsis || '';
-            editPostQualitySelect.value = post.quality || '';
-            editPostAudioLanguageSelect.value = post.audioLanguage || '';
-            editDriveLinksContainer.innerHTML = '';
-            post.driveLinks?.forEach(link => addDriveLinkInput('editDriveLinksContainer', link.url, link.language));
+
+            // Show/hide fields based on content type
+            if (post.contentType === 'movie') {
+                editMovieFields.classList.remove('hidden');
+                editMovieDriveLinksContainerWrapper.classList.remove('hidden');
+                editSeriesFields.classList.add('hidden');
+
+                editPostQualitySelect.value = post.quality || '';
+                editPostAudioLanguageSelect.value = post.audioLanguage || '';
+                editDriveLinksContainer.innerHTML = '';
+                post.driveLinks?.forEach(link => addDriveLinkInput('editDriveLinksContainer', link.url, link.language));
+            } else if (post.contentType === 'series') {
+                editMovieFields.classList.add('hidden');
+                editMovieDriveLinksContainerWrapper.classList.add('hidden');
+                editSeriesFields.classList.remove('hidden');
+
+                editSeasonsContainer.innerHTML = ''; // Clear existing seasons
+                // Populate existing seasons and episodes
+                post.seasons?.forEach((season) => {
+                    addSeasonInput(editSeasonsContainer, null, season.episodes, season.isSingleLink, season.singleLink?.url, season.singleLink?.language);
+                });
+                seasonCounter = post.seasons?.length || 0; // Reset counter for new additions
+            }
             openModal('editModal');
         }
 
         saveEditBtn.addEventListener('click', async () => {
-            if (!currentUserId || editingItemType !== 'post') return;
+            if (!currentUserId || !editingItemId) return;
+
             try {
                 const docRef = doc(db, `artifacts/${appId}/public/data/posts`, editingItemId);
-                const driveLinks = Array.from(editDriveLinksContainer.querySelectorAll('.flex.gap-2')).map(div => ({ url: div.querySelector('.drive-link-url').value.trim(), language: div.querySelector('.drive-link-language').value })).filter(link => link.url);
-                await updateDoc(docRef, {
+                const updatedData = {
                     title: editPostTitleInput.value.trim(),
                     posterUrl: editPostPosterUrlInput.value.trim(),
                     synopsis: editPostSynopsisInput.value.trim(),
-                    quality: editPostQualitySelect.value,
-                    audioLanguage: editPostAudioLanguageSelect.value,
-                    driveLinks,
-                });
+                };
+
+                if (editingItemType === 'movie') {
+                    const driveLinks = Array.from(editDriveLinksContainer.querySelectorAll('.flex.gap-2')).map(div => ({ url: div.querySelector('.drive-link-url').value.trim(), language: div.querySelector('.drive-link-language').value })).filter(link => link.url);
+                    Object.assign(updatedData, {
+                        quality: editPostQualitySelect.value,
+                        audioLanguage: editPostAudioLanguageSelect.value,
+                        driveLinks: driveLinks,
+                    });
+                } else if (editingItemType === 'series') {
+                    const seasons = [];
+                    const seasonElements = editSeasonsContainer.querySelectorAll('.season-block');
+                    let hasValidLinks = false; // Check for valid links in series edit
+                    seasonElements.forEach((seasonDiv) => {
+                        const seasonName = seasonDiv.querySelector('.season-name-input').value.trim();
+                        const isSingleLink = seasonDiv.querySelector('.single-link-checkbox').checked;
+                        let seasonData = { seasonName: seasonName, isSingleLink: isSingleLink };
+
+                        if (isSingleLink) {
+                            const singleLinkUrl = seasonDiv.querySelector('.single-season-link-url').value.trim();
+                            const singleLinkLanguage = seasonDiv.querySelector('.single-season-link-language').value;
+                            if (singleLinkUrl) {
+                                seasonData.singleLink = { url: singleLinkUrl, language: singleLinkLanguage };
+                                hasValidLinks = true;
+                            }
+                        } else {
+                            const episodes = [];
+                            const episodeElements = seasonDiv.querySelectorAll('.episodes-container > div');
+                            episodeElements.forEach(episodeDiv => {
+                                const url = episodeDiv.querySelector('.episode-link-url').value.trim();
+                                const language = episodeDiv.querySelector('.episode-link-language').value;
+                                if (url) {
+                                    episodes.push({ url, language });
+                                    hasValidLinks = true;
+                                }
+                            });
+                            if (episodes.length > 0) {
+                                seasonData.episodes = episodes;
+                            }
+                        }
+                        seasons.push(seasonData);
+                    });
+                    if (!hasValidLinks) {
+                        showMessageBox("Por favor, adicione pelo menos um link (de episódio ou temporada inteira) para a série.", "error");
+                        return; // Prevent saving if no valid links
+                    }
+                    Object.assign(updatedData, { seasons: seasons });
+                }
+
+                await updateDoc(docRef, updatedData);
                 showMessageBox('Postagem atualizada com sucesso!');
                 window.closeModal('editModal');
             }
@@ -2300,42 +2989,62 @@
             watchLaterSidebar.classList.toggle('open');
             sidebarOverlay.classList.toggle('open');
             if (watchLaterSidebar.classList.contains('open')) {
-                listenForSavedPosts();
+                // No need to call listenForSavedPosts here, it's already listening
+                // The onSnapshot listener will update the sidebar automatically
             }
         };
         toggleSidebarBtn.addEventListener('click', window.toggleSidebar);
 
-        function toggleSave(postId) {
+        async function toggleSave(postId) {
             if (!currentUserId) return showMessageBox("Você precisa estar autenticado.", "error");
-            const localStorageKey = `drivePlus_savedPosts_${currentUserId}`;
-            let savedPosts = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
-            const isCurrentlySaved = savedPosts.includes(postId);
+            
+            const savedPostRef = doc(db, `artifacts/${appId}/users/${currentUserId}/savedPosts`, postId);
 
-            if (isCurrentlySaved) {
-                savedPosts = savedPosts.filter(id => id !== postId);
-                showMessageBox("Removido de 'Assistir Mais Tarde'.", "success");
-            } else {
-                savedPosts.push(postId);
-                showMessageBox("Adicionado a 'Assistir Mais Tarde'!", "success");
+            try {
+                const savedDoc = await getDoc(savedPostRef);
+                if (savedDoc.exists()) {
+                    // Post is currently saved, so remove it
+                    await deleteDoc(savedPostRef);
+                    showMessageBox("Removido de 'Assistir Mais Tarde'.", "success");
+                } else {
+                    // Post is not saved, so add it
+                    await setDoc(savedPostRef, {
+                        postId: postId,
+                        timestamp: serverTimestamp()
+                    });
+                    showMessageBox("Adicionado a 'Assistir Mais Tarde'!", "success");
+                }
+            } catch (error) {
+                console.error("Error toggling save status:", error);
+                showMessageBox("Erro ao salvar/remover postagem.", "error");
             }
-            localStorage.setItem(localStorageKey, JSON.stringify(savedPosts));
-            listenForSavedPosts();
         }
 
         function renderSavedPostInSidebar(post) {
             if (!post || !post.id) return;
-            let savedPostElement = document.getElementById(`saved-post-${post.id}`);
-            if (savedPostElement) return; 
+            
+            // Check if element already exists to avoid duplicates if called multiple times
+            if (document.getElementById(`saved-post-${post.id}`)) {
+                return;
+            }
 
-            savedPostElement = document.createElement('div');
+            const savedPostElement = document.createElement('div');
             savedPostElement.id = `saved-post-${post.id}`;
             savedPostElement.className = 'sidebar-post-item';
+            
+            let accessButtonHtml = '';
+            if (post.contentType === 'movie') {
+                accessButtonHtml = post.driveLinks?.length > 0 ? `<button class="btn-primary w-11/12 mx-auto mt-2 text-sm" data-post-id="${post.id}" data-action="open-links-sidebar">Acessar</button>` : '';
+            } else if (post.contentType === 'series') {
+                accessButtonHtml = post.seasons?.length > 0 ? `<button class="btn-primary w-11/12 mx-auto mt-2 text-sm" data-post-id="${post.id}" data-action="open-series-access-sidebar">Acessar Série</button>` : '';
+            }
+
             savedPostElement.innerHTML = `
                 <button class="sidebar-post-remove-btn" data-post-id="${post.id}" title="Remover">
                     <i class="fas fa-times"></i>
                 </button>
                 <img src="${post.posterUrl || 'https://placehold.co/120x180/cccccc/000000?text=Pôster'}" alt="${post.title} Poster" class="sidebar-poster" onerror="this.onerror=null;this.src='https://placehold.co/120x180/cccccc/000000?text=Pôster';">
-                ${post.driveLinks?.length > 0 ? `<button class="btn-primary w-11/12 mx-auto mt-2 text-sm" data-post-id="${post.id}">Acessar</button>` : ''}
+                ${accessButtonHtml}
             `;
             savedPostsContainer.appendChild(savedPostElement);
 
@@ -2343,10 +3052,18 @@
                 e.stopPropagation();
                 toggleSave(post.id);
             });
-            savedPostElement.querySelector(".btn-primary")?.addEventListener('click', () => {
-                const postToOpen = allPostsCache[post.id];
-                if (postToOpen) openLinksModal(postToOpen.title, postToOpen.driveLinks);
-            });
+
+            if (post.contentType === 'movie') {
+                savedPostElement.querySelector('[data-action="open-links-sidebar"]')?.addEventListener('click', () => {
+                    const postToOpen = allPostsCache[post.id];
+                    if (postToOpen) openLinksModal(postToOpen.title, postToOpen.driveLinks);
+                });
+            } else if (post.contentType === 'series') {
+                savedPostElement.querySelector('[data-action="open-series-access-sidebar"]')?.addEventListener('click', () => {
+                    const postToOpen = allPostsCache[post.id];
+                    if (postToOpen) openSeriesAccessModal(postToOpen);
+                });
+            }
         }
 
         function listenForSavedPosts() {
@@ -2354,31 +3071,41 @@
                 savedPostsContainer.innerHTML = '<p class="text-center text-gray-500 text-sm col-span-2">Faça login para salvar.</p>';
                 return;
             }
-            const localStorageKey = `drivePlus_savedPosts_${currentUserId}`;
-            const savedPostIds = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
             
-            savedPostsContainer.innerHTML = '';
+            const savedPostsRef = collection(db, `artifacts/${appId}/users/${currentUserId}/savedPosts`);
+            const savedPostsQuery = query(savedPostsRef, orderBy('timestamp', 'desc'));
 
-            if (savedPostIds.length === 0) {
-                savedPostsContainer.innerHTML = '<p class="text-center text-gray-500 text-sm col-span-2">Nenhuma postagem salva.</p>';
-            } else {
-                savedPostIds.forEach(postId => {
-                    const postData = allPostsCache[postId];
-                    if (postData) {
-                        renderSavedPostInSidebar(postData);
-                    } else {
-                        // If a saved post no longer exists in allPostsCache, remove it from localStorage
-                        const currentSaved = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
-                        localStorage.setItem(localStorageKey, JSON.stringify(currentSaved.filter(id => id !== postId)));
-                    }
+            onSnapshot(savedPostsQuery, (snapshot) => {
+                savedPostIdsFromFirebase = snapshot.docs.map(doc => doc.id); // Update global list of saved post IDs
+                
+                savedPostsContainer.innerHTML = ''; // Clear previous content before re-rendering
+
+                if (savedPostIdsFromFirebase.length === 0) {
+                    savedPostsContainer.innerHTML = '<p class="text-center text-gray-500 text-sm col-span-2">Nenhuma postagem salva.</p>';
+                } else {
+                    savedPostIdsFromFirebase.forEach(postId => {
+                        const postData = allPostsCache[postId]; // Get post details from the main posts cache
+                        if (postData) {
+                            renderSavedPostInSidebar(postData);
+                        } else {
+                            // If a saved post no longer exists in allPostsCache (e.g., deleted by original author),
+                            // it will not be rendered in the sidebar. We could also remove it from savedPosts in Firebase
+                            // if it's truly gone, but for simplicity, we'll just not render it.
+                            console.warn(`Saved post with ID ${postId} not found in allPostsCache.`);
+                        }
+                    });
+                }
+
+                // Update the UI of all post cards in the main feed to reflect saved status
+                document.querySelectorAll('.btn-save').forEach(btn => {
+                    const postId = btn.dataset.postId;
+                    const isSaved = savedPostIdsFromFirebase.includes(postId);
+                    btn.classList.toggle('saved', isSaved);
+                    btn.querySelector('i').className = isSaved ? 'fas fa-bookmark' : 'far fa-bookmark';
                 });
-            }
-
-            document.querySelectorAll('.btn-save').forEach(btn => {
-                const postId = btn.dataset.postId;
-                const isSaved = savedPostIds.includes(postId);
-                btn.classList.toggle('saved', isSaved);
-                btn.querySelector('i').className = isSaved ? 'fas fa-bookmark' : 'far fa-bookmark';
+            }, (error) => {
+                console.error("Error listening for saved posts:", error);
+                savedPostsContainer.innerHTML = '<p class="text-center text-red-500 col-span-2">Erro ao carregar postagens salvas.</p>';
             });
         }
         
@@ -2398,8 +3125,8 @@
                     return post.releaseYear === currentYear;
                 }).sort((a, b) => {
                     // Convert releaseDate to Date objects for comparison
-                    const dateA = a.releaseDate ? new Date(a.releaseDate) : new Date(0); // Use epoch for null dates
-                    const dateB = b.releaseDate ? new Date(b.releaseDate) : new Date(0);
+                    const dateA = a.releaseDate ? new Date(a.releaseDate.seconds * 1000) : new Date(0); // Use epoch for null dates
+                    const dateB = b.releaseDate ? new Date(b.releaseDate.seconds * 1000) : new Date(0);
                     return dateB.getTime() - dateA.getTime(); // Sort descending
                 });
 
@@ -2423,21 +3150,36 @@
             postElement.id = `recent-post-${post.id}`;
 
             const posterUrl = post.posterUrl || 'https://placehold.co/120x180/cccccc/000000?text=Sem+Pôster';
-            const releaseDate = post.releaseDate ? new Date(post.releaseDate).toLocaleDateString('pt-BR') : 'Data Desconhecida';
+            const releaseDate = post.releaseDate && post.releaseDate.seconds ? new Date(post.releaseDate.seconds * 1000).toLocaleDateString('pt-BR') : 'Data Desconhecida';
+
+            let accessButtonHtml = '';
+            if (post.contentType === 'movie') {
+                accessButtonHtml = post.driveLinks?.length > 0 ? `<button class="btn-primary w-11/12 mx-auto mt-2 text-sm" data-post-id="${post.id}" data-action="open-links-recent">Acessar</button>` : '';
+            } else if (post.contentType === 'series') {
+                accessButtonHtml = post.seasons?.length > 0 ? `<button class="btn-primary w-11/12 mx-auto mt-2 text-sm" data-post-id="${post.id}" data-action="open-series-access-recent">Acessar Série</button>` : '';
+            }
+
 
             postElement.innerHTML = `
                 <img src="${posterUrl}" alt="${post.title} Poster" onerror="this.onerror=null;this.src='https://placehold.co/120x180/cccccc/000000?text=Error';">
                 <h4>${post.title}</h4>
                 <p>Lançamento: ${releaseDate}</p>
-                ${post.driveLinks?.length > 0 ? `<button class="btn-primary w-11/12 mx-auto mt-2 text-sm" data-post-id="${post.id}" data-action="open-links-recent">Acessar</button>` : ''}
+                ${accessButtonHtml}
             `;
             recentPostsContainer.appendChild(postElement);
 
             // Add event listener for the access button in the recent posts section
-            postElement.querySelector('[data-action="open-links-recent"]')?.addEventListener('click', () => {
-                const postToOpen = allPostsCache[post.id];
-                if (postToOpen) openLinksModal(postToOpen.title, postToOpen.driveLinks);
-            });
+            if (post.contentType === 'movie') {
+                postElement.querySelector('[data-action="open-links-recent"]')?.addEventListener('click', () => {
+                    const postToOpen = allPostsCache[post.id];
+                    if (postToOpen) openLinksModal(postToOpen.title, postToOpen.driveLinks);
+                });
+            } else if (post.contentType === 'series') {
+                postElement.querySelector('[data-action="open-series-access-recent"]')?.addEventListener('click', () => {
+                    const postToOpen = allPostsCache[post.id];
+                    if (postToOpen) openSeriesAccessModal(postToOpen);
+                });
+            }
         }
 
         // --- New Requests Feature Logic ---
@@ -2586,9 +3328,94 @@
             }
         });
 
+        // --- Update History Logic (Hardcoded) ---
+        const updateHistoryData = [
+            {
+                date: '17/07/2025',
+                type: 'bugfix',
+                title: 'Correção na Busca do TMDB',
+                description: 'Corrigido um problema onde os resultados da busca do TMDB não estavam aparecendo ao pesquisar filmes ou séries. O endpoint da API foi ajustado para garantir a exibição correta dos resultados.'
+            },
+            {
+                date: '17/07/2025',
+                type: 'feature',
+                title: 'Publicação e Acesso de Séries',
+                description: 'Adicionada a funcionalidade de publicar séries com múltiplas temporadas e episódios, e um novo modal para acesso organizado por temporada/episódio.'
+            },
+            {
+                date: '17/07/2025',
+                type: 'feature',
+                title: 'Menu de Criação Flutuante',
+                description: 'O botão flutuante de criação agora oferece a opção de publicar filmes ou séries.'
+            },
+            {
+                date: '16/07/2025',
+                type: 'feature',
+                title: 'Funcionalidade de Histórico de Atualizações Adicionada',
+                description: 'Adicionado um novo botão no cabeçalho para visualizar o histórico de atualizações e correções do aplicativo.'
+            },
+            {
+                date: '16/07/2025',
+                type: 'correction',
+                title: 'Correção de Persistência da Imagem de Perfil',
+                description: 'Corrigido um bug onde a imagem de perfil não persistia após a atualização da página.'
+            },
+            {
+                date: '16/07/2025',
+                type: 'bugfix',
+                title: 'Remoção de Spinner de Upload',
+                description: 'Removido o spinner de carregamento visual da caixa de upload de imagem para uma experiência mais limpa.'
+            },
+            {
+                date: '16/07/2025',
+                type: 'correction',
+                title: 'Simplificação do Upload de Imagem de Perfil',
+                description: 'Removida a opção de fazer upload de imagem de perfil por URL, mantendo apenas o upload via ImgBB.'
+            },
+            {
+                date: '16/07/2025',
+                type: 'feature',
+                title: 'Botão de Contato para Sugestões/Erros',
+                description: 'Adicionado um botão na seção de perfil para notificar erros ou sugerir ideias via WhatsApp.'
+            },
+            {
+                date: '16/07/2025',
+                type: 'correction',
+                title: 'Correção de Salvamento de Postagens',
+                description: 'Corrigido um problema onde as postagens salvas não eram exibidas corretamente após a atualização da página.'
+            }
+        ];
+
+        openUpdateHistoryBtn.addEventListener('click', () => {
+            updateHistoryContent.innerHTML = ''; // Clear previous content
+            if (updateHistoryData.length === 0) {
+                updateHistoryContent.innerHTML = '<p class="text-center text-gray-500">Nenhum histórico de atualização disponível.</p>';
+            } else {
+                updateHistoryData.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    const typeClass = item.type === 'correction' ? 'correction' : (item.type === 'bugfix' ? 'bugfix' : 'feature');
+
+                    itemElement.className = `update-item ${typeClass}`;
+                    itemElement.innerHTML = `
+                        <h4 class="${typeClass}">${item.title}</h4>
+                        <p>${item.description}</p>
+                        <span class="date">Data: ${item.date}</span>
+                    `;
+                    updateHistoryContent.appendChild(itemElement);
+                });
+            }
+            openModal('updateHistoryModal');
+        });
+
+        // --- Contact Developer Button Logic ---
+        contactDevBtn.addEventListener('click', () => {
+            const message = "Olá! Tenho uma sugestão/bug para o Drive+ Filmes & Séries. Gostaria de fazer parte criativa do app!";
+            window.open(`https://wa.me/5521993837026?text=${encodeURIComponent(message)}`, '_blank');
+        });
+
         // General event listeners
         window.addEventListener('click', (event) => {
-            const modals = ['createMovieSeriesModal', 'editModal', 'confirmationModal', 'linksModal', 'commentsModal', 'verificationModal', 'createRequestModal'];
+            const modals = ['createMovieModal', 'createSeriesModal', 'editModal', 'confirmationModal', 'linksModal', 'accessSeriesModal', 'commentsModal', 'verificationModal', 'createRequestModal', 'updateHistoryModal'];
             modals.forEach(modalId => {
                 const modalElement = document.getElementById(modalId);
                 if (modalElement && event.target === modalElement) {
@@ -2603,6 +3430,10 @@
                     }
                 }
             });
+            // Close FAB menu if click is outside of FAB and menu itself
+            if (fabMenu.classList.contains('open') && !fabMenu.contains(event.target) && !createPostFab.contains(event.target)) {
+                fabMenu.classList.remove('open');
+            }
             if (watchLaterSidebar.classList.contains('open') && !watchLaterSidebar.contains(event.target) && !toggleSidebarBtn.contains(event.target)) {
                 window.toggleSidebar();
             }
