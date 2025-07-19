@@ -53,12 +53,7 @@
             font-size: 1.75rem;
         }
         
-        .header-center {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            padding: 0 20px;
-        }
+        /* Removed .header-center as search bar is now conditionally displayed */
 
         .search-bar {
             position: relative;
@@ -66,32 +61,33 @@
             max-width: 400px;
         }
 
-        #searchInput {
+        #searchInput, #catalogSearchInput { /* Apply to new catalog search as well */
             width: 100%;
-            padding: 8px 16px 8px 40px;
+            padding: 8px 16px 8px 40px; /* Adjusted padding to make space for the icon */
             border-radius: 9999px;
             border: 1px solid #e5e7eb;
             background-color: #f3f4f6;
             transition: all 0.2s ease-in-out;
         }
 
-        #searchInput:focus {
+        #searchInput:focus, #catalogSearchInput:focus { /* Apply to new catalog search as well */
             outline: none;
             border-color: #4f46e5;
             background-color: #ffffff;
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
         }
 
+        /* Style for the search icon */
         .search-bar .fa-search {
             position: absolute;
             top: 50%;
             left: 15px;
             transform: translateY(-50%);
-            color: #9ca3af;
-            font-size: 0.9rem; /* Corrected: Decreased search icon size */
+            color: #4f46e5; /* Blue color for the icon */
+            font-size: 0.9rem;
         }
 
-        /* Profile Icon in Header (reverted to original size) */
+        /* Profile Icon in Header */
         .profile-icon {
             width: 50px; 
             height: 50px; 
@@ -100,9 +96,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            cursor: pointer;
             overflow: hidden;
-            border: 2px solid var(--profile-border-color, #4f46e5);
+            /* Removed border as requested */
             flex-shrink: 0;
             transition: border-color 0.5s ease-in-out;
         }
@@ -191,7 +186,6 @@
             border-radius: 9999px;
             font-size: 0.75rem;
             font-weight: 700;
-            /* Removed margin-left: 8px; to allow flexible positioning */
             text-transform: uppercase;
             letter-spacing: 0.05em;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -479,7 +473,7 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            border: 3px solid var(--profile-border-color, #4f46e5);
+            /* Removed border as requested */
             margin: 0 auto 12px;
             transition: border-color 0.5s ease-in-out;
         }
@@ -903,11 +897,76 @@
             margin-bottom: 8px;
         }
 
+        /* Catalog Section Styles */
+        #catalogSection {
+            /* Initially hidden, will be shown by JS */
+        }
+
+        .catalog-list { /* Changed from .catalog-grid to .catalog-list */
+            display: flex;
+            flex-direction: column; /* Stack items vertically */
+            gap: 10px; /* Space between items */
+            max-height: 70vh; /* Limit height for scrolling */
+            overflow-y: auto;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #e5e7eb;
+        }
+
+        .catalog-item {
+            display: flex;
+            align-items: center; /* Vertically align items in the row */
+            gap: 15px; /* Space between poster, title, and button */
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .catalog-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .catalog-item img {
+            width: 80px; /* Smaller poster for list view */
+            height: 120px; /* Maintain aspect ratio */
+            object-fit: cover;
+            border-radius: 6px;
+            flex-shrink: 0; /* Prevent image from shrinking */
+        }
+
+        .catalog-item .catalog-details {
+            flex-grow: 1; /* Allow details to take remaining space */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .catalog-item .catalog-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 5px;
+        }
+
+        .catalog-item .catalog-access-btn {
+            /* Inherits from .btn-primary, adjust as needed */
+            padding: 6px 12px; /* Smaller padding for list button */
+            font-size: 0.8rem;
+            flex-shrink: 0; /* Prevent button from shrinking */
+            min-width: 80px; /* Ensure button has a minimum width */
+        }
+
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            .header-center {
-                padding: 0 10px;
-            }
+            /* Removed .header-center from here as it's no longer in header */
             .header-left h1 {
                 display: none;
             }
@@ -959,6 +1018,27 @@
             /* Adjusted for smaller screens when recent posts becomes a section */
             #recentPostsSection .recent-posts-grid {
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+            /* Catalog item adjustments for small screens */
+            .catalog-item {
+                flex-direction: column; /* Stack poster, title, button vertically */
+                align-items: center;
+                text-align: center;
+                padding: 10px;
+            }
+            .catalog-item img {
+                width: 100px; /* Adjust poster size */
+                height: 150px;
+                margin-bottom: 8px;
+            }
+            .catalog-item .catalog-details {
+                align-items: center;
+                text-align: center;
+                margin-bottom: 8px;
+            }
+            .catalog-item .catalog-access-btn {
+                width: 80%; /* Make button wider */
+                max-width: 150px;
             }
         }
 
@@ -1057,12 +1137,7 @@
             <img src="https://cloud.gmelius.com/public/logos/google/Google_Drive_Logo_512px.png" alt="Google Drive Logo" onerror="this.onerror=null;this.src='https://placehold.co/40x40/cccccc/000000?text=Logo';">
             <h1 id="drivePlusTitle" class="text-2xl font-bold text-gray-900">Drive+</h1>
         </div>
-        <div class="header-center">
-            <div class="search-bar">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Buscar no feed...">
-            </div>
-        </div>
+        <!-- Removed header-center div as search bar is now conditionally displayed -->
         <div class="flex items-center gap-4">
             <!-- New Requests Icon -->
             <button id="toggleRequestsFeedBtn" class="btn-icon text-purple-600 hover:text-purple-800">
@@ -1071,6 +1146,10 @@
             <!-- New Fire Icon for Recent Posts - Colored -->
             <button id="toggleRecentPostsBtn" class="btn-icon text-yellow-500 hover:text-orange-500">
                 <i class="fas fa-fire text-xl"></i>
+            </button>
+            <!-- New Catalog Icon -->
+            <button id="toggleCatalogBtn" class="btn-icon text-green-600 hover:text-green-800">
+                <i class="fas fa-list text-xl"></i>
             </button>
             <!-- Bookmark Icon - Colored -->
             <button id="toggleSidebarBtn" class="btn-icon text-blue-600 hover:text-blue-800">
@@ -1087,6 +1166,14 @@
     </header>
 
     <div class="container">
+        <!-- Search bar moved here, centered and conditionally visible -->
+        <div id="mainFeedSearchBar" class="flex justify-center mb-4">
+            <div class="search-bar">
+                <i class="fas fa-search"></i> <!-- Re-added search icon -->
+                <input type="text" id="searchInput" placeholder="Buscar no feed...">
+            </div>
+        </div>
+
         <!-- Posts Display Section -->
         <div id="postsFeedSection">
             <div id="postsContainer">
@@ -1109,6 +1196,20 @@
             <h2 class="text-2xl font-bold text-gray-800 mb-4">Lançamentos Recentes</h2>
             <div id="recentPostsContainer" class="recent-posts-grid">
                 <p class="text-center text-gray-500 col-span-full">Carregando lançamentos...</p>
+            </div>
+        </div>
+
+        <!-- Catalog Section (New) -->
+        <div id="catalogSection" class="hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Catálogo de Filmes e Séries</h2>
+            <div id="catalogSearchBar" class="flex justify-center mb-4">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="catalogSearchInput" placeholder="Buscar no catálogo...">
+                </div>
+            </div>
+            <div id="catalogContainer" class="catalog-list">
+                <p class="text-center text-gray-500">Carregando catálogo...</p>
             </div>
         </div>
 
@@ -1544,7 +1645,7 @@
         let allPostsData = []; // Array of all posts
         let allRequestsData = []; // Array of all requests
         let isUserVerified = false; // Local state for verification
-        let activeView = 'posts'; // Track the currently active view: 'posts', 'requests', 'recent', or 'profile'
+        let activeView = 'posts'; // Track the currently active view: 'posts', 'requests', 'recent', 'profile', 'catalog'
         let savedPostIdsFromFirebase = []; // To store IDs of saved posts from Firebase
 
         // TMDB API
@@ -1561,8 +1662,10 @@
         const postsFeedSection = document.getElementById('postsFeedSection');
         const requestsFeedSection = document.getElementById('requestsFeedSection');
         const recentPostsSection = document.getElementById('recentPostsSection'); // New: Recent Posts Section
+        const catalogSection = document.getElementById('catalogSection'); // New: Catalog Section
         const postsContainer = document.getElementById('postsContainer');
         const requestsContainer = document.getElementById('requestsContainer'); // This will hold the rendered requests
+        const catalogContainer = document.getElementById('catalogContainer'); // New: Catalog Container
         const createPostFab = document.getElementById('createPostFab');
         const fabMenu = document.getElementById('fabMenu'); // New FAB menu
         const fabMovieBtn = document.getElementById('fabMovieBtn'); // New FAB movie button
@@ -1634,6 +1737,8 @@
         const profileVerificationBadge = document.getElementById('profileVerificationBadge');
         const headerLogoContainer = document.getElementById('headerLogoContainer');
         const searchInput = document.getElementById('searchInput');
+        const mainFeedSearchBar = document.getElementById('mainFeedSearchBar'); // New: Reference to the search bar container
+        const catalogSearchInput = document.getElementById('catalogSearchInput'); // New: Catalog search input
 
         // Sidebar Elements
         const watchLaterSidebar = document.getElementById('watchLaterSidebar');
@@ -1644,6 +1749,9 @@
         // Recent Posts Section Elements (updated to reference the section)
         const recentPostsContainer = document.getElementById('recentPostsContainer');
         const toggleRecentPostsBtn = document.getElementById('toggleRecentPostsBtn');
+
+        // New Catalog Elements
+        const toggleCatalogBtn = document.getElementById('toggleCatalogBtn'); // New: Catalog button
 
         // New Request Feature Elements
         const toggleRequestsFeedBtn = document.getElementById('toggleRequestsFeedBtn');
@@ -1792,6 +1900,7 @@
                 updateVerificationStatusUI(); // Still update badge
                 filterAndRenderPosts(searchInput.value);
                 filterAndRenderRequests(); // Update requests when user data changes
+                filterAndRenderCatalogPosts(catalogSearchInput.value); // Update catalog when user data changes
             }, (error) => console.error("Error listening for user profiles:", error));
         }
         
@@ -1903,9 +2012,12 @@
             postsFeedSection.classList.add('hidden');
             requestsFeedSection.classList.add('hidden');
             recentPostsSection.classList.add('hidden'); // Hide recent posts section
+            catalogSection.classList.add('hidden'); // Hide catalog section
             profileSection.classList.remove('hidden');
             createPostFab.classList.add('hidden'); // Hide FAB when in profile
             fabMenu.classList.remove('open'); // Close FAB menu if open
+            mainFeedSearchBar.classList.add('hidden'); // Hide main search bar in profile
+            catalogSearchInput.parentElement.parentElement.classList.add('hidden'); // Hide catalog search bar
             activeView = 'profile'; // Set active view
         });
 
@@ -1915,28 +2027,40 @@
             requestsFeedSection.classList.add('hidden');
             recentPostsSection.classList.add('hidden'); // Hide recent posts section
             profileSection.classList.add('hidden'); // Hide profile section
+            catalogSection.classList.add('hidden'); // Hide catalog section
+
+            // Hide all search bars and FAB by default
+            mainFeedSearchBar.classList.add('hidden');
+            catalogSearchInput.parentElement.parentElement.classList.add('hidden');
+            createPostFab.classList.add('hidden');
+            fabMenu.classList.remove('open'); // Always close FAB menu when changing views
 
             if (feedType === 'posts') {
                 postsFeedSection.classList.remove('hidden');
                 createPostFab.classList.remove('hidden');
+                mainFeedSearchBar.classList.remove('hidden'); // Show main search bar for posts feed
                 filterAndRenderPosts(searchInput.value);
             } else if (feedType === 'requests') {
                 requestsFeedSection.classList.remove('hidden');
-                createPostFab.classList.add('hidden');
+                // FAB and search are hidden for requests
                 listenForRequests();
             } else if (feedType === 'recent') {
                 recentPostsSection.classList.remove('hidden');
-                createPostFab.classList.add('hidden');
+                // FAB and search are hidden for recent posts
                 listenForRecentPosts();
+            } else if (feedType === 'catalog') { // New catalog view
+                catalogSection.classList.remove('hidden');
+                catalogSearchInput.parentElement.parentElement.classList.remove('hidden'); // Show catalog search bar
+                filterAndRenderCatalogPosts(catalogSearchInput.value); // Render catalog posts
             }
             activeView = feedType;
             window.scrollTo(0, 0); // Scroll to top when changing views
-            fabMenu.classList.remove('open'); // Close FAB menu when changing views
         }
 
         headerLogoContainer.addEventListener('click', () => showFeed('posts'));
         toggleRequestsFeedBtn.addEventListener('click', () => showFeed('requests'));
         toggleRecentPostsBtn.addEventListener('click', () => showFeed('recent'));
+        toggleCatalogBtn.addEventListener('click', () => showFeed('catalog')); // New: Catalog button listener
 
 
         openVerificationModalIcon.addEventListener('click', () => openModal('verificationModal'));
@@ -1978,34 +2102,34 @@
             // Additional for variety: Orange, Dark Blue, Purple
             
             // Action, Adventure, Animation, Comedy, Crime
-            28: 'tag-color-red',       // Ação (Red)
-            12: 'tag-color-blue',      // Aventura (Blue)
-            16: 'tag-color-green',     // Animação (Green)
-            35: 'tag-color-yellow',    // Comédia (Yellow)
-            80: 'tag-color-darkblue',  // Crime (Dark Blue)
+            28: 'tag-color-red',        // Ação (Red)
+            12: 'tag-color-blue',       // Aventura (Blue)
+            16: 'tag-color-green',      // Animação (Green)
+            35: 'tag-color-yellow',     // Comédia (Yellow)
+            80: 'tag-color-darkblue',   // Crime (Dark Blue)
             
             // Documentary, Drama, Family, Fantasy, History
-            99: 'tag-color-blue',      // Documentário (Blue - as per image example)
-            18: 'tag-color-green',     // Drama (Green - as per image example)
-            10751: 'tag-color-yellow', // Família (Yellow)
-            14: 'tag-color-purple',    // Fantasia (Purple)
-            36: 'tag-color-orange',    // História (Orange)
+            99: 'tag-color-blue',       // Documentário (Blue - as per image example)
+            18: 'tag-color-green',      // Drama (Green - as per image example)
+            10751: 'tag-color-yellow',  // Família (Yellow)
+            14: 'tag-color-purple',     // Fantasia (Purple)
+            36: 'tag-color-orange',     // História (Orange)
             
             // Horror, Music, Mystery, Romance, Science Fiction
-            27: 'tag-color-red',       // Terror (Red)
-            10402: 'tag-color-green',  // Música (Green)
-            9648: 'tag-color-darkblue',// Mistério (Dark Blue)
-            10749: 'tag-color-yellow', // Romance (Yellow)
-            878: 'tag-color-blue',     // Ficção Científica (Blue)
+            27: 'tag-color-red',        // Terror (Red)
+            10402: 'tag-color-green',   // Música (Green)
+            9648: 'tag-color-darkblue', // Mistério (Dark Blue)
+            10749: 'tag-color-yellow',  // Romance (Yellow)
+            878: 'tag-color-blue',      // Ficção Científica (Blue)
             
             // TV Movie, Thriller, War, Western, Reality, Talk, News
-            10770: 'tag-color-orange', // Filme de TV (Orange)
-            53: 'tag-color-red',       // Thriller (Red)
-            10752: 'tag-color-green',  // Guerra (Green)
-            37: 'tag-color-blue',      // Faroeste (Blue)
-            10764: 'tag-color-yellow', // Reality (Yellow)
+            10770: 'tag-color-orange',  // Filme de TV (Orange)
+            53: 'tag-color-red',        // Thriller (Red)
+            10752: 'tag-color-green',   // Guerra (Green)
+            37: 'tag-color-blue',       // Faroeste (Blue)
+            10764: 'tag-color-yellow',  // Reality (Yellow)
             10767: 'tag-color-darkblue',// Talk (Dark Blue)
-            10763: 'tag-color-orange'  // Notícias (Orange)
+            10763: 'tag-color-orange'   // Notícias (Orange)
         };
 
         const qualityColorMap = {
@@ -2178,7 +2302,14 @@
             onSnapshot(postsQuery, (snapshot) => {
                 allPostsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 allPostsCache = allPostsData.reduce((acc, post) => ({...acc, [post.id]: post}), {});
-                filterAndRenderPosts(searchInput.value);
+                // Only render to main feed if it's the active view
+                if (activeView === 'posts') {
+                    filterAndRenderPosts(searchInput.value);
+                }
+                // Always update catalog posts data, but render only if active
+                if (activeView === 'catalog') {
+                    filterAndRenderCatalogPosts(catalogSearchInput.value);
+                }
                 listenForSavedPosts(); // Call listenForSavedPosts here to ensure allPostsCache is ready
             }, (error) => console.error("Error listening for posts:", error));
         }
@@ -3181,6 +3312,60 @@
                 });
             }
         }
+
+        // --- New Catalog Feature Logic ---
+        function renderCatalogPostCard(post) {
+            const postElement = document.createElement('div');
+            postElement.className = 'catalog-item';
+            postElement.id = `catalog-post-${post.id}`;
+
+            const posterUrl = post.posterUrl || 'https://placehold.co/80x120/cccccc/000000?text=Pôster';
+            
+            let accessButtonHtml = '';
+            if (post.contentType === 'movie') {
+                accessButtonHtml = post.driveLinks?.length > 0 ? `<button class="btn-primary catalog-access-btn" data-post-id="${post.id}" data-action="open-links-catalog">Acessar</button>` : '';
+            } else if (post.contentType === 'series') {
+                accessButtonHtml = post.seasons?.length > 0 ? `<button class="btn-primary catalog-access-btn" data-post-id="${post.id}" data-action="open-series-access-catalog">Acessar Série</button>` : '';
+            }
+
+            postElement.innerHTML = `
+                <img src="${posterUrl}" alt="${post.title} Poster" onerror="this.onerror=null;this.src='https://placehold.co/80x120/cccccc/000000?text=Erro';">
+                <div class="catalog-details">
+                    <h4 class="catalog-title">${post.title}</h4>
+                </div>
+                ${accessButtonHtml}
+            `;
+            catalogContainer.appendChild(postElement);
+
+            if (post.contentType === 'movie') {
+                postElement.querySelector('[data-action="open-links-catalog"]')?.addEventListener('click', () => {
+                    const postToOpen = allPostsCache[post.id];
+                    if (postToOpen) openLinksModal(postToOpen.title, postToOpen.driveLinks);
+                });
+            } else if (post.contentType === 'series') {
+                postElement.querySelector('[data-action="open-series-access-catalog"]')?.addEventListener('click', () => {
+                    const postToOpen = allPostsCache[post.id];
+                    if (postToOpen) openSeriesAccessModal(postToOpen);
+                });
+            }
+        }
+
+        function filterAndRenderCatalogPosts(searchTerm) {
+            const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+            const filteredPosts = normalizedSearchTerm === '' ? allPostsData : allPostsData.filter(post => {
+                return post.title.toLowerCase().includes(normalizedSearchTerm) || post.synopsis.toLowerCase().includes(normalizedSearchTerm);
+            });
+
+            catalogContainer.innerHTML = '';
+            if (filteredPosts.length === 0) {
+                catalogContainer.innerHTML = '<p class="text-center text-gray-500 col-span-full">Nenhum resultado encontrado.</p>';
+            } else {
+                filteredPosts.forEach(post => renderCatalogPostCard(post));
+            }
+        }
+
+        catalogSearchInput.addEventListener('input', debounce(() => filterAndRenderCatalogPosts(catalogSearchInput.value), 300));
+
 
         // --- New Requests Feature Logic ---
 
